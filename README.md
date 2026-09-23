@@ -55,9 +55,12 @@ claimed equivalent. Drag is within one selected document; snapshots explicitly
 use native `ax-yaml`. See the linked guides before migrating a caller.
 
 Functional baseline: UltimateBrowserJS commit
-`133797d29cedf19b40f5cdcdcf4aac80a9b4941d` (MIT). Its isolated 24 stub tests are
-historical baseline evidence. Actual old-server probes supply 29 evaluation,
-30 keyboard, 15 input-target, 28 click and 16 CSS vectors for the rewrite.
+`133797d29cedf19b40f5cdcdcf4aac80a9b4941d` (MIT). That project's 24 isolated tests
+used a stub browser and are historical evidence only. ChromeRelay connects to a
+Chrome debug port and can run page script and read or change cookies and storage.
+The checks recorded here used temporary profiles on macOS. They do not cover
+arbitrary pages. Old-server probes supply 29 evaluation, 30 keyboard, 15
+input-target, 28 click and 16 CSS vectors for the rewrite.
 
 New implementation copyright 2026 dhtfish98, MIT. Original attribution and
 all dependency license texts are retained in `LICENSE`, `THIRD_PARTY_NOTICES.md`
