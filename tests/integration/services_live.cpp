@@ -1,0 +1,300 @@
+#include <chromerelay/runtime.hpp>
+#include <cstdlib>
+#include <iostream>
+using namespace chromerelay;
+unsigned passed = 0, failed = 0;
+std::string step;
+void check(bool condition, const char *label) {
+  if (condition)
+    ++passed;
+  else {
+    ++failed;
+    std::cerr << "FAIL: " << label << '\n';
+  }
+}
+template <class F> void rejects(F action, const char *label) {
+  try {
+    action();
+    check(false, label);
+  } catch (const std::exception &) {
+    check(true, label);
+  }
+}
+int main(int argc, char **argv) {
+  if (argc != 2)
+    return 2;
+  try {
+    const auto *site = std::getenv("CHROMERELAY_FIXTURE_URL");
+    if (!site)
+      throw RelayError("Fixture URL missing");
+    ActionRuntime runtime(static_cast<unsigned>(std::stoul(argv[1])));
+    ActionCatalog catalog;
+    auto call = [&](const std::string &name, Json arguments = Json::object()) {
+      step = name + " " + arguments.dump();
+      return runtime.invoke(catalog.resolve(name, arguments, true));
+    };
+    auto eval = [&](const std::string &expression) {
+      return call("page_evaluate", {{"script", expression}}).at("result");
+    };
+    call("tab_create");
+    call("page_navigate", {{"url", std::string(site) + "/page.html"}});
+    eval("document.body.insertAdjacentHTML('beforeend','<input id=other "
+         "value=untouched>');true");
+    call("element_fill",
+         {{"selector", "#person"}, {"text", "chosen"}, {"field", "#other"}});
+    check(eval("document.querySelector('#person').value==='chosen'&&document."
+               "querySelector('#other').value==='untouched'") == true,
+          "unknown public field cannot redirect fill to another element");
+
+    check(call("page_dialog").at("handler") == "accept",
+          "dialog default arms acceptance");
+    check(eval("confirm('once')") == true,
+          "armed confirm accepted during pending evaluation");
+    check(eval("confirm('again')") == false,
+          "rule consumed once; unarmed dialog dismissed");
+    call("page_dialog", {{"text", "你好😀\\\""}});
+    check(eval("prompt('value','initial')") == "你好😀\\\"",
+          "prompt text keeps Unicode and punctuation");
+    call("page_dialog", {{"action", "dismiss"}});
+    check(eval("prompt('dismiss')").is_null(), "prompt dismissal returns null");
+    check(eval("alert('automatic');42") == 42,
+          "unarmed alert cannot deadlock a tool");
+    call("page_dialog", {{"action", "accept"}});
+    eval("document.querySelector('#count-button').onclick=()=>{window."
+         "dialogProof=confirm('click');};true");
+    call("element_click", {{"selector", "#count-button"}});
+    check(eval("dialogProof") == true,
+          "native click completes through modal handler and input receipt");
+    const auto first = runtime.browser().current_target();
+    call("page_dialog", {{"action", "accept"}});
+    call("tab_create", {{"url", std::string(site) + "/page.html"}});
+    check(eval("confirm('other tab')") == false,
+          "armed dialog belongs to its page");
+    call("tab_close");
+    auto tabs = call("tab_list").at("tabs");
+    for (const auto &tab : tabs)
+      if (tab.at("id") == first)
+        call("tab_activate", {{"index", tab.at("index")}});
+    check(eval("confirm('original tab')") == true,
+          "switching pages preserves original one-shot rule");
+
+    call("clear_storage");
+    call("clear_storage", {{"type", "session"}});
+    for (const auto &key : {std::string("中文😀"), std::string("__proto__"),
+                            std::string("constructor"), std::string("")}) {
+      call("set_storage", {{"key", key}, {"value", "literal '\"\\ value"}});
+      check(call("get_storage", {{"key", key}}).at(key) ==
+                "literal '\"\\ value",
+            "literal storage key/value roundtrip");
+    }
+    const auto storage = call("get_storage").at("storage");
+    check(storage.size() == 4 &&
+              storage.at("__proto__") == "literal '\"\\ value",
+          "all storage includes prototype-like keys");
+    call("set_storage",
+         {{"key", "scope"}, {"value", "tab"}, {"type", "session"}});
+    check(call("get_storage", {{"key", "scope"}}).at("scope").is_null(),
+          "session storage does not write local storage");
+    check(call("get_storage", {{"key", "scope"}, {"type", "session"}})
+                  .at("scope") == "tab",
+          "session storage read");
+    call("page_reload");
+    check(call("get_storage", {{"key", "scope"}, {"type", "session"}})
+                  .at("scope") == "tab",
+          "session storage survives same-tab reload");
+    call("page_storage", {{"action", "remove"}, {"key", "__proto__"}});
+    check(call("get_storage").at("storage").size() == 3,
+          "remove exact storage key");
+    rejects([&] { call("page_storage", {{"action", "set"}}); },
+            "storage write requires explicit key");
+    call("clear_storage");
+    check(call("get_storage").at("storage").empty(), "clear local storage");
+
+    call("clear_cookies");
+    call("set_cookie",
+         {{"name", "relay"}, {"value", "base"}, {"domain", "127.0.0.1"}});
+    check(call("get_cookies").at("cookies").size() == 1,
+          "cookie aliases operate on real browser store");
+    check(eval("document.cookie").get<std::string>().find("relay=base") !=
+              std::string::npos,
+          "cookie is observable by page");
+    call("browser_cookies", {{"action", "set"},
+                             {"name", "relay"},
+                             {"value", "scoped"},
+                             {"domain", "127.0.0.1"},
+                             {"path", "/scope"}});
+    check(call("browser_cookies", {{"name", "relay"}}).at("cookies").size() ==
+              2,
+          "same-name cookie paths coexist");
+    call("browser_cookies", {{"action", "delete"},
+                             {"name", "relay"},
+                             {"domain", "127.0.0.1"},
+                             {"path", "/scope"}});
+    check(call("browser_cookies", {{"name", "relay"}}).at("cookies").size() ==
+              1,
+          "cookie deletion filters exact domain and path");
+    call("browser_cookies", {{"action", "set"},
+                             {"name", "secret"},
+                             {"value", ""},
+                             {"domain", "127.0.0.1"},
+                             {"httpOnly", true},
+                             {"secure", true}});
+    const auto secret =
+        call("browser_cookies", {{"name", "secret"}}).at("cookies").at(0);
+    check(secret.at("value") == "" && secret.at("httpOnly") == true &&
+              secret.at("secure") == true,
+          "cookie empty value and flags preserved");
+    check(eval("document.cookie.includes('secret=')") == false,
+          "HttpOnly cookie hidden from page JavaScript");
+    const double expiry = eval("Math.floor(Date.now()/1000)+3600");
+    call("browser_cookies", {{"action", "set"},
+                             {"name", "expiry"},
+                             {"value", "time"},
+                             {"domain", "127.0.0.1"},
+                             {"expires", expiry}});
+    check(call("browser_cookies", {{"name", "expiry"}})
+                  .at("cookies")
+                  .at(0)
+                  .at("expires") == expiry,
+          "cookie expiration uses Unix seconds");
+    rejects([&] { call("browser_cookies", {{"action", "delete"}}); },
+            "cookie deletion requires name");
+    rejects(
+        [&] {
+          call("browser_cookies",
+               {{"action", "set"}, {"name", "bad"}, {"domain", "127.0.0.1"}});
+        },
+        "cookie set requires value");
+    const auto isolated = runtime.browser()
+                              .browser_call("Target.createBrowserContext")
+                              .at("browserContextId");
+    check(runtime.browser()
+              .browser_call("Storage.getCookies",
+                            {{"browserContextId", isolated}})
+              .at("cookies")
+              .empty(),
+          "writes do not enter another browser context");
+    runtime.browser().browser_call("Target.disposeBrowserContext",
+                                   {{"browserContextId", isolated}});
+    call("browser_cookies", {{"action", "delete"}, {"name", "relay"}});
+    check(call("browser_cookies", {{"name", "relay"}}).at("cookies").empty(),
+          "delete name across matching paths");
+    call("clear_cookies");
+    check(call("get_cookies").at("cookies").empty(),
+          "clear selected browser context cookies");
+
+    eval("document.querySelector('#person').style.setProperty('outline','1px "
+         "dotted blue','important');true");
+    const auto outline =
+        eval("document.querySelector('#person').style.outline");
+    call("element_highlight",
+         {{"selector", "#person"}, {"duration", 150}, {"color", "#0f0"}});
+    check(eval("getComputedStyle(document.querySelector('#person'))."
+               "outlineColor") == "rgb(0, 255, 0)",
+          "highlight visible in computed style");
+    call("page_wait", {{"ms", 180}});
+    check(eval("document.querySelector('#person').style.outline") == outline,
+          "highlight restores original outline");
+    check(eval("document.querySelector('#person').style.getPropertyPriority('"
+               "outline')") == "important",
+          "highlight restores original priority");
+    call("element_highlight", {{"selector", "#person"}, {"duration", 120}});
+    call("element_highlight",
+         {{"selector", "#person"}, {"duration", 250}, {"color", "blue"}});
+    call("page_wait", {{"ms", 160}});
+    check(eval("document.querySelector('#person').style.outlineWidth") == "3px",
+          "earlier highlight timer cannot cancel later highlight");
+    call("page_wait", {{"ms", 150}});
+    check(eval("document.querySelector('#person').style.outline") == outline,
+          "overlapping highlights restore pre-highlight style");
+    call("element_highlight", {{"selector", "#person"}, {"duration", 120}});
+    eval("document.querySelector('#person').style.outline='5px dashed "
+         "orange';true");
+    call("page_wait", {{"ms", 150}});
+    check(eval("document.querySelector('#person').style.outlineWidth") == "5px",
+          "highlight cleanup respects later page edits");
+    check(eval("Object.getOwnPropertySymbols(document.querySelector('#person'))"
+               ".filter(s=>Symbol.keyFor(s)==='ChromeRelay.outlineLease')."
+               "length") == 0,
+          "highlight lease removed after restoration");
+    call("element_highlight", {{"selector", "#person"}, {"duration", 120}});
+    eval("document.querySelector('#person').style.outlineColor='lime';true");
+    call("page_wait", {{"ms", 150}});
+    check(
+        eval("document.querySelector('#person').style.outlineWidth==='5px'&&"
+             "document.querySelector('#person').style.outlineStyle==='dashed'&&"
+             "document.querySelector('#person').style.outlineColor==='lime'") ==
+            true,
+        "highlight restores untouched properties while preserving one "
+        "page-edited property");
+    rejects(
+        [&] {
+          call("element_highlight",
+               {{"selector", "#person"}, {"color", "red;display:none"}});
+        },
+        "highlight rejects invalid CSS color");
+    eval("document.querySelector('#person').value='Snapshot "
+         "text';document.body.insertAdjacentHTML('beforeend','<input "
+         "type=checkbox checked aria-label=\"Snapshot choice\"><button "
+         "aria-hidden=true>Hidden snapshot name</button>');true");
+    const auto snapshot = call("page_snapshot");
+    check(snapshot.at("format") == "ax-yaml" && snapshot.at("tree").is_array(),
+          "snapshot identifies native AX format and tree");
+    check(snapshot.at("snapshot").get<std::string>().find("Snapshot choice") !=
+              std::string::npos,
+          "snapshot contains computed accessible name");
+    check(snapshot.at("tree").dump().find("\"checked\":\"true\"") !=
+              std::string::npos,
+          "snapshot preserves checkbox state");
+    check(snapshot.at("tree").dump().find("Snapshot text") != std::string::npos,
+          "snapshot preserves input value");
+    check(snapshot.at("snapshot")
+                  .get<std::string>()
+                  .find("Hidden snapshot name") == std::string::npos,
+          "snapshot excludes aria-hidden subtree");
+
+    call("page_navigate", {{"url", std::string(site) + "/frame-host.html"}});
+    call("page_wait", {{"type", "function"},
+                       {"expression", "readyFrames.length>=6"},
+                       {"timeout", 5000}});
+    call("page_storage",
+         {{"action", "set"}, {"key", "scope"}, {"value", "root"}});
+    call("frame_enter", {{"selector", "#crossFrame"}});
+    check(call("page_storage", {{"key", "scope"}}).at("scope").is_null(),
+          "OOP frame storage isolated by real origin");
+    call("page_storage",
+         {{"action", "set"}, {"key", "scope"}, {"value", "frame"}});
+    check(eval("localStorage.getItem('scope')") == "frame",
+          "storage targets selected OOP default context");
+    call("page_dialog", {{"text", "Frame prompt"}});
+    check(eval("prompt('frame prompt')") == "Frame prompt",
+          "OOP dialog handled while renderer call waits");
+    call(
+        "element_highlight",
+        {{"selector", "#frame-input"}, {"duration", 500}, {"color", "purple"}});
+    check(eval("getComputedStyle(document.querySelector('#frame-input'))."
+               "outlineColor") == "rgb(128, 0, 128)",
+          "highlight targets selected OOP document");
+    const auto frame_snapshot =
+        call("page_snapshot").at("snapshot").get<std::string>();
+    check(frame_snapshot.find("Frame action") != std::string::npos &&
+              frame_snapshot.find("Root button") == std::string::npos,
+          "snapshot follows selected frame without root content");
+    call("frame_reset");
+    check(call("page_storage", {{"key", "scope"}}).at("scope") == "root",
+          "frame storage preserves root value");
+    call("frame_enter", {{"selector", "#sameFrame"}});
+    check(call("page_storage", {{"key", "scope"}}).at("scope") == "root",
+          "same-origin frame shares local storage");
+    call("page_dialog", {{"action", "accept"}});
+    check(eval("confirm('same frame')") == true,
+          "same-process frame dialog acceptance");
+    call("tab_close");
+    std::cout << passed << " page services checks passed; " << failed
+              << " failed\n";
+    return failed ? 1 : 0;
+  } catch (const std::exception &error) {
+    std::cerr << step << "\n" << error.what() << '\n';
+    return 1;
+  }
+}

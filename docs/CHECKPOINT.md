@@ -1,0 +1,323 @@
+# Local delivery — 1.0.0 — 2026-09-23
+
+Evidence filenames and workspace-relative paths below refer to local validation records. See `../validation/README.md` for the published summary; raw local logs are not included.
+
+ChromeRelay is the third native rewrite. Debug, Release and ASan/UBSan have
+passed the final local matrix. Installed CLI and independent CMake consumer
+checks passed. The release archive audit is recorded in `artifact-manifest.json`
+and `delivery-verification.json` alongside the raw test evidence.
+MachOInspect and A64Dispatch retain their accepted local deliveries.
+
+## Current implementation
+
+- Functional baseline: UltimateBrowserJS commit
+  `133797d29cedf19b40f5cdcdcf4aac80a9b4941d`. All three original Git checkouts remain clean.
+- Baseline isolated Node v25.9.0: 24 checks, zero failures; stub browser tests.
+  The original server also ran against an owned Chrome with Playwright 1.50.0;
+  29 observed evaluation vectors now anchor the native compatibility test.
+- C++20 native library/executable; Boost 1.92.0 Beast/Asio and nlohmann/json 3.12.0.
+  No Node or Playwright production runtime. Minimal DOM adaptation is embedded
+  from `resources/dom_agent.js`, without installing persistent page globals.
+- Catalog: 54 canonical actions and 75 legacy names. All 54 primary operation handlers are
+  present. All 75 old names now have primary-path native MCP/browser execution
+  evidence. Tested subtypes and limits are listed below; listing alone is not acceptance.
+- `DevToolsChannel`: bounded loopback HTTP discovery, async WebSocket, request IDs,
+  sessions, promise dispatch, event and outgoing queues, timeout/disconnect errors.
+  Discovery plus handshake now share their connection allowance.
+- `decode_devtools_message`: strict response/event envelopes, positive exact IDs,
+  exclusive result/error shapes, bounded integer error codes and session correlation.
+  Malformed/binary frames fail pending calls rather than being coerced. The local
+  peer reproduced a fractional-ID response satisfying an integer request before
+  the fix. It now runs 56 fault scenarios / 169 native checks; see `docs/WIRE_AND_FUZZ.md`.
+- `StdioEndpoint`: selected MCP 2024-11-05 / 2025-11-25 initialization, tool
+  lists/calls, notifications, protocol/tool errors, structured results, bounded
+  fragmented input, CRLF and final EOF record. `RequestQueue` keeps browser actions
+  ordered on one worker while the input reader handles active/queued cancellation.
+- `BrowserWorkspace`: current target, stable tab ordering, initial single context,
+  create/switch/close, nav/history/reload/stop, eval, console/network events, and
+  real nested frame sessions/default execution contexts.
+  A runtime action's deadline now propagates through connect, refresh, attach and
+  nested CDP calls. Bounded remote-object/input cleanup may run after that deadline.
+- `DomActions`, `ElementLease`, `ActionClock`: CSS/XPath and id/text/testid/
+  placeholder/label shortcuts; role/name uses Chrome's actual accessibility tree
+  and backend node identities, including child image names and hidden referenced
+  labels. Remote object leases preserve the chosen element identity and release it.
+- Native mouse click variants, hover, fast/paced Unicode input, fill/contenteditable,
+  keyboard chords, focus/blur, select, checkbox, form fill, reads/find/count,
+  checks/assertions, scroll and condition/time waits. Runtime owns sequencing and
+  deadlines; page JS handles only DOM access, selection and necessary control events.
+- Native keyboard planning validates whole chords before input, emits actual modifier
+  events and resolves US physical/literal names. The executor pins one root session
+  and performs bounded reverse-order release after timeout/cancellation/errors.
+  The real-browser suite covers 30 old-server event vectors, all 117 physical names
+  and actual editing (169 checks); six owned reply/session fault scenarios add 63
+  checks. Mapping data retains its Apache-2.0 license and attribution; see `docs/KEYBOARD.md`.
+- Input targeting now follows nonempty label, placeholder, global visible-input
+  index, then selector. Labels/placeholders ignore index; interleaved inputs and
+  textareas retain document order. Fifteen observed baseline vectors run in all
+  typing modes, with same/cross-origin frame isolation: 97 checks.
+- Script evaluation observes loss of its unique default context while a CDP
+  request is pending. Conditions may resume in the replacement document, within
+  their original deadline; ordinary scripts fail without replaying effects.
+  Both pin the original target instead of moving to a survivor tab. Nineteen
+  actual condition/replacement/target-close checks and a lost-promise trace are
+  documented in `docs/NAVIGATION.md`.
+- Readiness includes visibility, enabled/editable and hit testing. Covered targets
+  are not force clicked. Click completion does not retry an already-issued click.
+  Frame-owner projection, borders, same-process offset normalization, rotation,
+  scale, ancestor viewport clipping and overlay hit tests now have real evidence.
+  Arbitrary perspective/animation/device-scale combinations are outside the validated matrix.
+- `browser_debug` now emits argument-free operation/timing records to stderr.
+  MCP stdout remains valid JSON-RPC; live process tests check the separation.
+- Fixed whitespace-only numeric strings, empty append deleting a character, UTF-8
+  preview truncation, and accepting a text input as an unchanged checkbox.
+- The owned-browser harness always shuts down HTTP on test exceptions and writes
+  profile-removal evidence only after actual temporary-directory cleanup.
+- `frame_context.cpp`: enter/list/leave/reset; default worlds and unique context IDs;
+  same-process and separate OOP sessions; three-level nested trees; process changes
+  during navigation; a detached selected frame fails without parent fallback.
+- `input_observer.cpp`: temporary trusted-event receipts through scoped Runtime
+  bindings survive renderer teardown. Ordinary propagation must settle; a received
+  event plus verified original-document loss also completes. Input is never resent.
+  Global properties, listeners, bindings and object leases are cleaned up; a local
+  watchdog bounds listener lifetime if the client vanishes. See `docs/FRAMES.md`.
+- Fixed OOP input-routing/render timing, cached sessions during process changes,
+  target-discovery/attachment races, and receipt loss on click-triggered navigation.
+  Retry recovery is restricted to failures known to occur before script execution;
+  unrelated script/protocol errors still fail.
+
+- `page_services.cpp`: one-shot page dialog rules, browser-context cookies,
+  literal local/session storage and selected-document native AX snapshots.
+- `pointer_state.cpp`: persistent per-tab coordinates/buttons, native mouse paths,
+  actual intercepted HTML drag data, trusted drops, bounded failure/disconnect cleanup.
+- Highlight leases restore per-property inline values/priorities, handle overlap and
+  preserve later page edits. Public unknown root arguments are stripped before
+  internal DOM dispatch, while nested user field maps remain intact.
+- CDP waits now pump browser events, so modal dialogs and intercepted drags can
+  complete during pending requests. An observed process-swap race rejected a stale
+  unique context before script execution; recovery now invalidates only that
+  identity and retries within the original deadline. Script exceptions are not retried.
+  Four extra process replacements and single-execution checks are in the frame suite.
+- See `docs/PAGE_SERVICES.md` for exact semantics, tested cases and remaining limits.
+  Snapshot output explicitly uses native `ax-yaml`, including the legacy name;
+  it does not claim Playwright `aria-yaml` byte compatibility.
+
+- `FileActions`, `PathAccess`, `ImageDestination`: regular and directory file
+  selection, bounded batches, allowed roots, canonical symlinks, pinned parent
+  descriptors and complete atomic screenshot output. `--allow-root` replaces the
+  default home/temp roots. Native nonempty selection uses CDP; clearing uses a
+  necessary DOM value/event adapter after Chrome's empty-path command proved ineffective.
+- Viewport/full-page/element PNG captures include scrolled, scaled and OOP-frame
+  cases. Base64, PNG chunk checksums/extent/ending and image dimensions are bounded;
+  independent Pillow decoding checks actual fixture pixels. Two actual MCP versions
+  deliver complete noisy captures over 500,000 Base64 characters. See
+  `docs/FILES_AND_CAPTURE.md` for path race/lifetime boundaries and size limits.
+
+- `ActionSequence`: ordered batch, bounded retry and step workflows; each child
+  reuses catalog validation and the native dispatcher. Parent deadlines cap each
+  attempt; step scopes restore afterward. Optional failures, complete results,
+  Unicode briefs, inherited name policy and exact retry counts have real evidence.
+  Depth, total dispatch and aggregate-output limits cannot be swallowed by retry.
+  See `docs/WORKFLOWS.md` for semantics and side-effect boundaries.
+
+- Compatibility now retains serialized legacy evaluation values, new-tab indices
+  and final loaded URLs, active flags, default last-tab/index close, root-page
+  metadata within frames, null legacy viewport, source doctype, modal detection,
+  log text/totals and cleanup before/after fields. Canonical result contracts
+  remain explicit. Default action budgets match the baseline's 3000/5000/10000 ms.
+- An observed close race is fixed by waiting for target removal before returning
+  the final inventory. Text queries exclude script/style/head source from ancestor
+  aggregation, preventing premature visible-text waits. Console observation also
+  consumes the browser Log domain and renders bounded object/sparse-array previews.
+  See `docs/COMPATIBILITY.md` for all 75 name mappings, tested values and deliberate
+  differences; no blanket byte-for-byte Playwright equivalence is claimed.
+
+- Explicit navigation now binds readiness to the returned loader and unique default
+  context. Reload requires a replacement loader; history verifies its destination
+  entry. Request ownership retires discarded documents rather than carrying their
+  unfinished fetches into a replacement page. Absolute parent deadlines prevent
+  cumulative millisecond truncation. See `docs/NAVIGATION.md` for actual cases and
+  remaining recovery limits.
+
+- `CancellationScope` propagates request cancellation through native waits, CDP,
+  DOM/workflow/input and bounded file/image loops. Cancellation bypasses ordinary
+  failure/retry handling, suppresses responses and prevents queued mutations.
+  Bounded cleanup releases held input and remote observations; failed setup drops
+  incomplete sessions. Cold discovery/handshake cancellation, late replies, OOP
+  scope and subsequent native actions have live evidence. The handshake shutdown
+  timer issue found in testing is fixed. See `docs/CANCELLATION.md`.
+
+## Latest actual verification
+
+Debug, Release **and** ASan/UBSan, after the final production changes:
+
+| Program | Checks | Scope |
+|---|---:|---|
+| foundation | 26 | Native catalog/JSON/argument contracts |
+| mcp-contract | 23 | Native protocol contracts with a callback handler |
+| file-contract | 40 | Actual filesystem, replacement/limit counterexamples and PNG container checks |
+| workflow-contract | 44 | Child validation, retry/depth/dispatch/output bounds and deadline scopes |
+| cancellation-contract | 22 | Active/queued cancellation, IDs, limits, EOF, failure and nested workflow propagation |
+| relay-wire-tests | 7 | Actual Chrome discovery, WS, CDP/session/errors |
+| relay-browser-tests | 25 | Actual navigation, history, tabs, eval, reconnect |
+| relay-dom-tests | 91 | Actual DOM/AX, trusted input, form and wait effects |
+| relay-keyboard-tests | 169 | Baseline event vectors, physical names, literal/shift distinctions, modifier order, invalid-input atomicity and actual editing |
+| relay-input-target-tests | 97 | Fifteen baseline vectors in all typing modes, canonical/legacy names, mixed-control order and selected-frame isolation |
+| relay-condition-tests | 19 | Root/frame document replacement, pending promises, exactly-once ordinary effects and original-target closure |
+| relay-click-tests | 118 | Baseline click/CSS vectors, moving/replaced targets, conditional hover, no replay after press, shadow overlays and original-target closure |
+| relay-frame-tests | 58 | Actual nested frames, process swaps, coordinates, input and navigation |
+| relay-services-tests | 55 | Actual dialogs, cookies/storage, highlighting, AX snapshots and frame scope |
+| relay-pointer-tests | 30 | Actual held buttons, native drag/drop, tab state, deadline cleanup and OOP drop |
+| relay-files-tests | 41 | Actual files/directories/OOP selection, path refusals and native captures |
+| verify_pngs.py | 24 | Independent decode and known pixels for eight actual screenshots |
+| mcp_files.py | 23 | Actual native MCP file/capture calls, restricted roots and full image roundtrips |
+| mcp_live.py | 52 | Actual native MCP child including DOM, nested OOP frames and diagnostics |
+| relay-workflow-tests | 41 | Actual page effects, exact attempts, optional failures, deadlines and OOP scope |
+| mcp_workflows.py | 53 | Actual native MCP workflow calls, legacy policy, full results and protocol versions |
+| relay-navigation-tests | 29 | Delayed commit/reload, readiness, history, redirects, network ownership and timeout recovery |
+| relay-recovery-tests | 13 | Delayed click navigation, beforeunload accept/dismiss, superseding navigation, generic/explicit target closure and subsequent recovery |
+| mcp_navigation.py | 14 | Actual MCP navigation results and parent workflow deadlines |
+| mcp_cancellation.py | 25 | Interactive native MCP with independent observer, late CDP replies, cleanup, OOP and cold connection cancellation |
+| mcp_compatibility.py | 116 | All 75 legacy names, 29 observed baseline eval vectors, actual page effects, return fields, scope and reconnect |
+| wire_fixture.py / relay-wire-fault-tests | 169 | 56 owned socket scenarios: split UTF-8, ping/pong, eight concurrent callers, late replies, failures, bounds and strict envelopes |
+| keyboard_fixture.py / relay-keyboard-fault-tests | 63 | Six owned reply/session fault scenarios, exact bounded cleanup, late responses and following input |
+
+**155 foundation/protocol/filesystem/workflow/cancellation checks + 1100 live Chrome checks + 232 socket/keyboard fault checks per build (1487 total)**, all
+passed. Chrome **153.0.8010.53**, CDP 1.3; macOS arm64. No ASan/UBSan report.
+Only owned headless Chrome profiles and local HTTP fixtures were used. Receipts
+confirm the browser survived each client test, then its owned process exited,
+the profile was removed, and the HTTP server thread stopped.
+
+ThreadSanitizer separately passed **45 protocol/cancellation contract checks +
+232 socket/keyboard fault checks + 272 actual browser checks (549 total)** with no race report. This
+is specific concurrency coverage: the 272 browser checks comprise 97 input-target,
+19 condition, 118 click, 13 recovery and 25 cancellation checks. It is not the entire suite under TSan.
+
+LLVM libFuzzer with ASan/UBSan completed **67,587 executions in 31 seconds**
+(seed 9819, maximum input 65,536 bytes, peak RSS 562 MiB), with no crash/sanitizer
+report. It compiles production JSON/CDP/catalog/MCP/framing code; its handler
+returns normalized data without browser actions. The corpus, manifest and
+limits are described in `docs/WIRE_AND_FUZZ.md`.
+
+Evidence under `../../evidence/UltimateBrowserJS/`:
+
+- `build-delivery-{debug,release,sanitize}.txt`, `tests-delivery-{debug,release,sanitize}.txt`.
+- `delivery-{debug,release,sanitize}-browser-final/`: per-program stdout/stderr, owned-browser receipt and
+  `mcp_live.py-children/`, `mcp_files.py-children/`, `mcp_workflows.py-children/` and
+  `mcp_navigation.py-children/`, `mcp_cancellation.py-children/` and `mcp_compatibility.py-children/` containing actual native MCP
+  response/diagnostic records; `relay-files-tests-children/` contains PNGs and metadata.
+- `delivery-{debug,release,sanitize}-browser-final-run.txt`, `tool-mapping.json`, and the current source hash
+  manifest `checkpoint-source-manifest.json`.
+- `delivery-{debug,release,sanitize,thread-sanitize}-wire-final/`: 56 peer receipts plus
+  native stdout/stderr and aggregate 169-check receipt for each build.
+- `delivery-{debug,release,sanitize,thread-sanitize}-fault-final/`: six keyboard fault
+  receipts plus native stdout/stderr and aggregate 63-check receipt for each build.
+- `tests-delivery-thread-sanitize.txt`, `build-delivery-thread-sanitize.txt`,
+  and `delivery-thread-sanitize-browser-final/` contain the current 45 + 272 thread-sanitizer
+  contract/browser results and cleanup receipt; socket checks add 232 above.
+- `delivery-fuzz-run.txt`, `delivery-fuzz-seeds.txt`, `build-delivery-fuzz.txt`
+  and `delivery-fuzz-corpus-manifest.json`: final bounded protocol fuzz evidence.
+  Earlier wire/click/input stage manifests are frozen historical checkpoints.
+- `delivery-verification.json`, `source-manifest.json` and `artifact-manifest.json`:
+  final checks, source hashes, installed files and delivery archive hashes.
+- `installed-cli.json`: 17 installed CLI checks, run from outside the source tree.
+  `installed-consumer-build.txt` and `installed-consumer-browser/`: independent
+  `find_package(ChromeRelay)` build and seven real browser checks.
+
+```sh
+cmake --preset release
+cmake --build --preset release
+ctest --preset release --verbose
+python3 tests/integration/run_suite.py --build build/release --evidence ../evidence/UltimateBrowserJS/delivery-release
+```
+
+Sanitize uses `/opt/homebrew/opt/llvm/bin/clang++` and the corresponding preset and
+binary directory. Release browser/MCP checks use the installed executable.
+The independent consumer links the exported installed static library. Distribution
+extraction and source reconstruction receipts are listed in the artifact audit.
+The earlier `services-sanitize-final/` receipt is a retained failed attempt (stale
+unique context during a process swap), not acceptance. Both current `*-browser-final/` runs
+above include the fix, expanded frame regression, file/capture, workflow, navigation, cancellation, compatibility and keyboard tests, with all twenty-one live
+programs exiting zero and owned-profile/server cleanup confirmed.
+
+The earlier `workflow-mcp-debug-initial/` is a retained failed test attempt: the
+new test referenced an unadvertised `get_value` name. The test now uses the actual
+legacy `get` tool with `type:value`; no alias was invented to satisfy the test.
+
+The earlier `navigation-debug-accepted/` failed at a nested deadline boundary;
+its sanitizer companion used the same pre-fix source and is not final acceptance.
+The final runs above include the absolute-deadline correction. Initial stale
+network-request failures and diagnostic evidence are explained in `docs/NAVIGATION.md`.
+
+Cancellation attempts and their corrections are retained and described in
+`docs/CANCELLATION.md`. The first LLVM cancellation-test build missed an explicit
+`<thread>` include; final ASan/UBSan and TSan builds include the correction.
+
+The `compatibility-debug-probe*` attempts record discovery of default timeout,
+script-text matching and asynchronous target-removal differences. One hover test
+needed to move the pointer away before expecting a new mouseover event. The first
+full `compatibility-debug-accepted/` run passed the previous 723 checks, but its
+new test assumed empty local storage despite sharing the owned fixture origin.
+The test now explicitly clears its store before its storage assertions. Only
+the final compatibility runs accepted that stage; the newer wire/browser runs
+above revalidate the same 75-name checks on the current decoder and transport.
+
+`wire-fractional-before/` proves the pre-fix ID-coercion failure. The initial wire
+test build emitted a test-only ignored-future-return warning, corrected before
+the final builds. The final fault fixture splits a Unicode scalar across
+continuation frames and interleaves control frames; its peer observes both
+masked pong replies. All final build logs are warning-free.
+
+`input-target-debug-before/` proves the selector/index target mismatch. The first
+expanded `input-target-debug-browser-final/` was a **failed** attempt: a frame
+process swap left a Runtime.evaluate request unanswered. An isolated 48-swap
+diagnostic did not reproduce that timing, but `swap-wait-before/` deterministically
+proved an unanswered old promise after session detach and replacement-context
+creation. Only the newer `dom-input-*-browser-final/` runs include its native
+context-loss fix and complete nineteen-program regression. The `condition-*`
+development attempts and observed Chrome error variants are retained; see
+`docs/NAVIGATION.md`. Diagnostic wire logging exists only in the isolated `.work`
+trace copy, not production source.
+
+## Recovery fix and delivery boundaries
+
+The final 13-check recovery suite independently observed delayed click navigation,
+accepted/dismissed beforeunload, superseding external navigation and target closure.
+`recovery-debug-expanded/` caught a real false success: generic load waiting could
+continue on a surviving tab after its original target closed. `wait_ready` now
+pins that target and shares one absolute deadline through connection/observations.
+The corrected final matrices include the fix. Earlier tests that supplied an
+incomplete MCP initialize object or placed an install rule before its executable
+were corrected before acceptance; neither is recorded as a successful check.
+
+The local delivery covers all 54 handlers and 75 compatibility names, the tested
+subtypes above, failure recovery, bounded fuzzing, three build modes, selected
+TSan checks, installed CLI/library and distributable source/binary archives.
+The earlier broad exploration list has been reviewed against the actual public
+API. It is not a promise to reproduce every Playwright engine or browser layout:
+
+- Drag selects source and destination in one selected document, including an OOP
+  frame. Separate-document drag and auto-scroll during dragging are unsupported.
+- Frame rotation, scale, clipping and moving-owner clicks have concrete tests.
+  Arbitrary perspective/device-scale/animation combinations and maximum-size
+  frame inventories are not exhaustively exercised.
+- CSS queries use native CSS within open roots, plus documented shortcuts and a
+  trailing `:visible` filter. Extended Playwright grammar and arbitrary nested
+  shadow ordering are not guaranteed. Preparatory detached-object failures may
+  fail without retry; no click is replayed after a press.
+- File checks include bounded directory selection, symlink/path replacement
+  refusals, PNG size limits and independent pixel decoding. Chrome opens upload
+  paths itself; concurrent filesystem mutation is not an atomic OS sandbox.
+  Animated screenshots are a sample, not a frozen-render transaction.
+- Cookie set exposes the baseline fields. Delete preserves partition identity
+  returned by Chrome, but a full partition/policy matrix is not established.
+  AX snapshots have explicit size/depth refusal; all arbitrary widget trees are
+  not validated. Snapshot format is native `ax-yaml`.
+- Explicit navigation pins loader/context; generic waits observe the current
+  document and original target. They do not predict navigation scheduled for a
+  future timer. Worker/unattached-target network activity is not observed.
+- macOS arm64 / Chrome 153 is validated. Linux/Windows runtime remains OPEN;
+  Windows currently needs POSIX adaptation.
+
+These limits are visible in the operational guides. Build/test success is not a
+claim of arbitrary-page equivalence, and no speed advantage is claimed.

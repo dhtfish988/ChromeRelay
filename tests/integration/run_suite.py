@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+"""Run the bounded local integration matrix; builds are an explicit prior step."""
+import argparse
+from pathlib import Path
+import subprocess
+import sys
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--build', required=True)
+    parser.add_argument('--binary')
+    parser.add_argument('--evidence', required=True)
+    parser.add_argument('--thread-subset', action='store_true')
+    args = parser.parse_args()
+    root = Path(__file__).resolve().parents[2]
+    build = Path(args.build).resolve()
+    binary = str(Path(args.binary).resolve()) if args.binary else str(build / 'chrome-relay')
+    prefix = Path(args.evidence).resolve()
+    prefix.parent.mkdir(parents=True, exist_ok=True)
+    native = ['wire', 'browser', 'dom', 'keyboard', 'input-target', 'condition',
+              'click', 'frame', 'services', 'pointer', 'files', 'workflow',
+              'navigation', 'recovery']
+    scripts = ['verify_pngs.py', 'mcp_live.py', 'mcp_files.py', 'mcp_workflows.py',
+               'mcp_navigation.py', 'mcp_cancellation.py', 'mcp_compatibility.py']
+    if args.thread_subset:
+        native = ['input-target', 'condition', 'click', 'recovery']
+        scripts = ['mcp_cancellation.py']
+    # PNG verification consumes the images emitted by relay-files-tests.
+    programs = [str(build / ('relay-' + name + '-tests')) for name in native]
+    programs += [str(root / 'tests/integration' / name) for name in scripts]
+    commands = [('browser-final', ['with_chrome.py', '--binary', binary, *programs]),
+                ('wire-final', ['wire_fixture.py', '--binary', str(build / 'relay-wire-fault-tests')]),
+                ('fault-final', ['keyboard_fixture.py', '--binary', str(build / 'relay-keyboard-fault-tests')])]
+    for suffix, command in commands:
+        receipt = str(prefix) + '-' + suffix
+        argv = [sys.executable, str(root / 'tests/integration' / command[0]),
+                '--evidence', receipt, *command[1:]]
+        with Path(receipt + '-run.txt').open('w') as log:
+            subprocess.run(argv, cwd=root, stdout=log, stderr=subprocess.STDOUT, check=True)
+        print(suffix + ' passed', flush=True)
+
+
+if __name__ == '__main__':
+    main()

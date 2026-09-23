@@ -1,0 +1,91 @@
+# Build, install and connect
+
+ChromeRelay is a native MCP stdio server that attaches to an existing Chrome
+DevTools endpoint on loopback. It does not start or close your browser. The
+tested platform is macOS arm64 with Chrome 153. Linux and Windows have not been
+built or run; Windows also needs a port of the current POSIX file/stdin code.
+
+## From source
+
+Use a C++20 compiler, CMake 3.24 or later, Ninja, Boost headers 1.85 or later and
+nlohmann/json 3.12 or later. Exact validation versions are in
+`dependencies.lock.json`. On the tested Homebrew environment:
+
+```sh
+brew install cmake ninja boost nlohmann-json
+cmake --preset release
+cmake --build --preset release
+ctest --preset release --verbose
+cmake --install build/release --prefix "$PWD/dist/ChromeRelay-macos-arm64"
+dist/ChromeRelay-macos-arm64/bin/chrome-relay --version
+```
+
+The installation includes the executable, static library, public headers,
+relocatable CMake package, consumer example, documents and licenses. DOM and key
+mapping resources are embedded; they need no runtime installation. Node,
+Playwright and Python are not production dependencies. Python and Pillow are
+used only by the integration tests. The macOS executable uses system libraries;
+the headers/library consumer additionally needs the C++ dependencies above.
+
+## Browser and MCP host
+
+Start a separate browser profile with remote debugging, or use a browser you
+already started with these flags:
+
+```sh
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 \
+  --user-data-dir="$HOME/Library/Application Support/ChromeRelayProfile"
+```
+
+Configure an MCP host to launch the **absolute** installed executable path with
+arguments `--port 9222`. A host using the common `mcpServers` configuration shape
+can use the following, replacing both placeholder paths:
+
+```json
+{
+  "mcpServers": {
+    "chrome-relay": {
+      "command": "/absolute/path/ChromeRelay-macos-arm64/bin/chrome-relay",
+      "args": ["--port", "9222", "--allow-root", "/absolute/path/browser-files"]
+    }
+  }
+}
+```
+
+`--allow-root` may repeat and replaces the default home/temp roots. These roots
+control uploads and saved screenshots, not arbitrary page scripts. Only trusted
+local clients should access the browser's debugging port. Standard output is
+reserved for newline-delimited MCP JSON; diagnostic errors use standard error.
+The host initializes MCP, lists tools and calls them over the child's stdin.
+
+Default tool names include `page_navigate`, `element_click`, `element_type` and
+`page_capture`. Add `--compat-tools` to advertise all 75 old names. Inspect the
+schemas without connecting to Chrome using `--catalog` or `--compat-catalog`.
+`CHROMERELAY_PORT` takes priority over legacy `CDP_PORT`; `--port` takes priority
+over environment values. Supported MCP lifecycle versions are 2024-11-05 and
+2025-11-25. See [COMPATIBILITY.md](COMPATIBILITY.md) before migrating callers.
+
+## Library consumer and tests
+
+```sh
+cmake -S examples/consumer -B build/consumer \
+  -DCMAKE_PREFIX_PATH="$PWD/dist/ChromeRelay-macos-arm64"
+cmake --build build/consumer
+build/consumer/relay-consumer
+```
+
+The example links `ChromeRelay::chromerelay` through `find_package(ChromeRelay)`.
+Passing an optional DevTools port exercises it against an owned test browser.
+
+```sh
+python3 tests/integration/run_suite.py --build build/release \
+  --evidence /absolute/path/test-evidence/release
+```
+
+The harness creates its own temporary headless Chrome profile and serves only
+local fixtures. It runs browser/MCP checks and bounded socket fault scenarios,
+records each exit and cleans up its own browser. The default Chrome path is the
+macOS application shown above. `with_chrome.py --chrome PATH` accepts an explicit
+browser path when running individual integrations. Unit checks and browser
+checks are separate; a successful build alone does not validate browser behavior.

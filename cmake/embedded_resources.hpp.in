@@ -1,0 +1,8 @@
+#pragma once
+namespace chromerelay::resources {
+inline constexpr const char *catalog=R"relay_catalog(@RELAY_CATALOG@)relay_catalog";
+inline constexpr const char *dom=R"relay_dom(@RELAY_DOM@)relay_dom";
+inline constexpr const char *legacy_value=R"relay_legacy(@RELAY_LEGACY_VALUE@)relay_legacy";
+inline constexpr const char *keys=R"relay_keys(@RELAY_KEYS@)relay_keys";
+inline constexpr const char *editing=R"relay_editing(@RELAY_EDITING@)relay_editing";
+}
