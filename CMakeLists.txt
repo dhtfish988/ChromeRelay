@@ -8,6 +8,37 @@ option(CHROMERELAY_BUILD_FUZZER "Build bounded protocol fuzz target with LLVM li
 find_package(nlohmann_json 3.12 REQUIRED)
 find_package(Boost 1.85 CONFIG REQUIRED)
 find_package(Threads REQUIRED)
+function(chromerelay_require_cancellation_support)
+ include(CheckCXXSourceCompiles)
+ include(CMakePushCheckState)
+ cmake_push_check_state(RESET)
+ set(CMAKE_REQUIRED_LIBRARIES Threads::Threads)
+ # This must link an executable even when a parent toolchain uses static
+ # try-compiles. A compiler's -std=c++20 flag alone does not prove library support.
+ set(CMAKE_TRY_COMPILE_TARGET_TYPE EXECUTABLE)
+ check_cxx_source_compiles([[
+  #include <stop_token>
+  int main() {
+    std::stop_source source;
+    std::stop_token token = source.get_token();
+    if (!token.stop_possible()) return 1;
+    source.request_stop();
+    return token.stop_requested() ? 0 : 1;
+  }
+ ]] CHROMERELAY_HAS_CXX20_STOP_TOKEN)
+ cmake_pop_check_state()
+ if(NOT CHROMERELAY_HAS_CXX20_STOP_TOKEN)
+  message(FATAL_ERROR
+   "ChromeRelay requires a compiler and C++ standard library/SDK that compile "
+   "and link std::stop_source and std::stop_token. The selected toolchain does "
+   "not provide that C++20 cancellation support. Upgrade the toolchain and its "
+   "standard library/SDK (on macOS, select a newer Xcode or a compatible LLVM "
+   "installation), then configure a fresh build directory with "
+   "-DCMAKE_CXX_COMPILER=/absolute/path/to/clang++. Enabling -std=c++20 alone "
+   "is insufficient. See the CMake configure log for the failed probe.")
+ endif()
+endfunction()
+chromerelay_require_cancellation_support()
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS resources/action_catalog.json resources/dom_agent.js resources/legacy_value.js resources/key_layout.json resources/editing_commands.json)
 file(READ resources/action_catalog.json RELAY_CATALOG)
 file(READ resources/dom_agent.js RELAY_DOM)

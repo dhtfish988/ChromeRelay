@@ -110,7 +110,7 @@
     "remote_objects": "Route leased remote objects and file-input selection to the creating session"
   },
   "source_sha256": {
-    "CMakeLists.txt": "0b733d5528f806a7280450f2c414ca68bb334ce8e547eb4c68370b3629d8ba1e",
+    "CMakeLists.txt": "30d5cfd0c8f9b17b238bd3cecb22cd858e16232befeeb32d06e67ae339ee4e2c",
     "include/chromerelay/browser.hpp": "45a5071c6b147df7d19c5fe77bc19ade604b59546c1f559d742e27e91cac3bb1",
     "include/chromerelay/dom.hpp": "cf699d6b6a1fffa0596dabe8df1998f6fe86971255f801fa7717111caacd1c3c",
     "src/browser/browser_workspace.cpp": "ddb38e16ec2a2e6d4fbc5ef3f6a6939d2fb3ca42ad189cfa75cb11de7f2d5527",
@@ -118,7 +118,7 @@
     "src/actions/file_actions.cpp": "a60dacd511fc1e82da4c157f5e77c7d33c213752ab21308d673a8f47922e8e6b",
     "tests/integration/run_suite.py": "9264d099113c3965fac01c75e81f854d029dc22d78de457dc2d14b204da9374b",
     "tests/integration/target_affinity_live.cpp": "851dd9a5f4e76df650b7bb37b9afd9390a90fb8ebefe160269142991ee3547f7",
-    "README.md": "40f7a1d6a62fb4c3787b3a77cd144a224477e2846756b903c6913ce9382ae0a1",
+    "README.md": "b8851f6bdf6851d11c63908ca80d2894440c1635a9768d00154bb1b6610ec49c",
     "docs/CANCELLATION.md": "ac6349619b9ee4229ab9cd256f9e964554c80d11ccdd442efad8223d2a94533e",
     "docs/FRAMES.md": "585f80496c03b3bb538dba34f9cb00a6fcf2d355f800d31a295f16d9d41487cb",
     "docs/CHECKPOINT.md": "75f8787388c214b3b5226c5ce46c8f0b0bbb21d9a5c21c84b4cafdd60e3d68bd"
@@ -144,5 +144,6 @@
     }
   },
   "hosted_ci_url": "https://github.com/dhtfish988/ChromeRelay/actions/workflows/verify.yml",
-  "hosted_ci_note": "Check the Actions result for the exact Git commit; local results do not imply a hosted run passed."
+  "hosted_ci_note": "Check the Actions result for the exact Git commit; local results do not imply a hosted run passed.",
+  "build_follow_up": "The build capability probe and toolchain documentation were added after the local full suites; production sources are unchanged. See current-review-build.json and the CI result for this commit."
 }

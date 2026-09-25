@@ -9,5 +9,18 @@
   "scope": "Preset parsing only; native builds and program behavior are recorded separately",
   "official_reference": "https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#schema",
   "hosted_workflow": ".github/workflows/verify.yml",
-  "hosted_status": "See the Actions run for the exact commit; defining a workflow is not a passing run"
+  "hosted_status": "See the Actions run for the exact commit; defining a workflow is not a passing run",
+  "cxx20_cancellation": {
+    "initial_hosted_run": "https://github.com/dhtfish988/ChromeRelay/actions/runs/36086280431",
+    "initial_result": "Build failed on macOS 15 default Xcode 16.4: std::stop_token and std::stop_source unavailable.",
+    "fix": "Configure-time compile/link probe with actionable error; CI now explicitly selects macOS 26 with Xcode 26.6.",
+    "scope": "No minimum Xcode version inferred; use the actual feature probe and the result of the hosted run for the exact commit.",
+    "runner_reference": "https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md",
+    "local_probe": {
+      "supported_toolchain": "AppleClang 21 / Xcode 27",
+      "supported_configure_passed": true,
+      "static_parent_still_links_executable": true,
+      "missing_header_negative_case": "With -nostdinc++, the real compile fails for missing stop_token; configure reports the capability error. This is not an old SDK reproduction."
+    }
+  }
 }

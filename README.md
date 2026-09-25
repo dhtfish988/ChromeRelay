@@ -17,8 +17,16 @@ cmake --install build/release --prefix "$PWD/dist/ChromeRelay-macos-arm64"
 dist/ChromeRelay-macos-arm64/bin/chrome-relay --port 9222
 ```
 
-Build dependencies: C++20, CMake, Ninja, Boost headers and nlohmann/json. Exact
-validated versions are in `dependencies.lock.json`. The macOS executable uses
+Build dependencies: a C++20 compiler **and a standard library/SDK implementing
+`std::stop_source` and `std::stop_token`**, CMake, Ninja, Boost headers and
+nlohmann/json. CMake compiles and links a cancellation probe before building;
+accepting `-std=c++20` alone is insufficient. If the probe fails, upgrade the
+compiler together with its standard library/SDK and configure a fresh build
+directory. On macOS, select a newer Xcode or compatible LLVM installation;
+changing the compiler executable alone may still leave an older SDK in use.
+Local validation used Xcode 27.0; the macOS CI configuration selects Xcode 26.6.
+These identify the local and CI toolchains, not a claimed minimum Xcode version.
+Exact validated versions are in `dependencies.lock.json`. The macOS executable uses
 system dynamic libraries. Build and install from this source tree. A [validation summary](validation/README.md)
 records the locally accepted version and its verification boundaries.
 

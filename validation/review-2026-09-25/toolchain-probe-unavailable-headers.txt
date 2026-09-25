@@ -1,0 +1,25 @@
+-- The CXX compiler identification is AppleClang 21.0.0.21000334
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found nlohmann_json: /opt/homebrew/share/cmake/nlohmann_json/nlohmann_jsonConfig.cmake (found suitable version "3.12.0", minimum required is "3.12")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Performing Test CHROMERELAY_HAS_CXX20_STOP_TOKEN
+-- Performing Test CHROMERELAY_HAS_CXX20_STOP_TOKEN - Failed
+-- Configuring incomplete, errors occurred!
+CMake Error at CMakeLists.txt:31 (message):
+  ChromeRelay requires a compiler and C++ standard library/SDK that compile
+  and link std::stop_source and std::stop_token.  The selected toolchain does
+  not provide that C++20 cancellation support.  Upgrade the toolchain and its
+  standard library/SDK (on macOS, select a newer Xcode or a compatible LLVM
+  installation), then configure a fresh build directory with
+  -DCMAKE_CXX_COMPILER=/absolute/path/to/clang++.  Enabling -std=c++20 alone
+  is insufficient.  See the CMake configure log for the failed probe.
+Call Stack (most recent call first):
+  CMakeLists.txt:41 (chromerelay_require_cancellation_support)
+
+

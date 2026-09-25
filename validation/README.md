@@ -43,3 +43,8 @@ Chrome 153 profiles were cleaned up. See `docs/CHECKPOINT.md`.
 
 The original 1.0.0 archives remain historical artifacts. Use the current Git commit
 for these fixes. This review did not repeat the historical TSan and fuzz runs.
+
+The first hosted run exposed missing C++20 cancellation support in the macOS 15
+default Xcode 16.4 library/SDK. Configuration now checks the actual compile/link
+capability before the main build. CI explicitly uses Xcode 26.6 on macOS 26; see
+the build review above for the failed run and exact validation scope.
