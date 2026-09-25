@@ -73,7 +73,7 @@ install(EXPORT ChromeRelayTargets NAMESPACE ChromeRelay:: DESTINATION lib/cmake/
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ChromeRelayConfig.cmake
  ${CMAKE_CURRENT_BINARY_DIR}/ChromeRelayConfigVersion.cmake DESTINATION lib/cmake/ChromeRelay)
 install(FILES README.md LICENSE THIRD_PARTY_NOTICES.md dependencies.lock.json DESTINATION share/doc/ChromeRelay)
-install(DIRECTORY docs licenses DESTINATION share/doc/ChromeRelay)
+install(DIRECTORY docs licenses validation DESTINATION share/doc/ChromeRelay)
 install(DIRECTORY examples DESTINATION share/ChromeRelay)
 if(CHROMERELAY_BUILD_FUZZER)
  if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")

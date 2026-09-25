@@ -8,6 +8,22 @@ embedded JavaScript adapters handle DOM access and browser-side value conversion
 
 Start with [GETTING_STARTED.md](docs/GETTING_STARTED.md) for installation, a
 separate Chrome profile, MCP host configuration and the C++ library example.
+For a concrete first task, [fill a local form, click once and read its result](docs/LOCAL_WORKFLOW.md).
+The example uses the included page and shows the expected MCP result.
+
+| Task | Canonical tools |
+|---|---|
+| Open and inspect a page | `tab_create`, `page_navigate`, `page_read`, `page_snapshot` |
+| Fill and check a form | `element_fill`, `element_click`, `element_read`, `page_assert` |
+| Work within a frame | `frame_list`, `frame_enter`, `frame_leave` |
+| Capture or compose actions | `page_capture`, `workflow_batch`, `workflow_steps` |
+
+[Hosted Release run 36091983364](https://github.com/dhtfish988/ChromeRelay/actions/runs/36091983364)
+passed 1,533 checks at commit `9f585b4c357fd2aa97cd450a4478c3cefdbdb866` on macOS
+arm64 / Chrome 152.0.7977.83. [Its summary](validation/hosted-run-2026-09-25.json)
+separates installed CLI checks and the catalog-only library consumer. An earlier
+intermittent transformed-frame hover timeout remains an open investigation;
+this successful run does not establish its cause or a production fix.
 
 ```sh
 cmake --preset release
@@ -26,7 +42,7 @@ directory. On macOS, select a newer Xcode or compatible LLVM installation;
 changing the compiler executable alone may still leave an older SDK in use.
 Local validation used Xcode 27.0; the macOS CI configuration selects Xcode 26.6.
 These identify the local and CI toolchains, not a claimed minimum Xcode version.
-Exact validated versions are in `dependencies.lock.json`. The macOS executable uses
+Validated dependency versions are in `dependencies.lock.json`. The macOS executable uses
 system dynamic libraries. Build and install from this source tree. A [validation summary](validation/README.md)
 records the locally accepted version and its verification boundaries.
 

@@ -1,4 +1,15 @@
-# Local validation record
+# Validation record
+
+Hosted Release verification also passed at commit
+`9f585b4c357fd2aa97cd450a4478c3cefdbdb866` in
+[run 36091983364](https://github.com/dhtfish988/ChromeRelay/actions/runs/36091983364):
+155 CTest checks, 1,146 browser/MCP checks in 23 programs and 232 fault checks
+(1,533 total), plus 17 installed CLI checks. The hosted library consumer built
+and checked the catalog; it did **not** run the seven live consumer checks.
+See [the compact hosted result](hosted-run-2026-09-25.json) for environment,
+artifact hashes and scope. The previously observed transformed-frame hover
+timeout remains **OPEN**: this run passed it, but no cause or production fix
+was established. Historical local results below remain separately scoped.
 
 The 2026-09-25 review passed **1,533 checks** in each fresh Debug, Release and
 ASan/UBSan build on macOS arm64: 155 contracts, 1,146 browser/MCP checks and

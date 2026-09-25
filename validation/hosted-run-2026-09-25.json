@@ -1,0 +1,61 @@
+{
+  "date": "2026-09-25",
+  "run_url": "https://github.com/dhtfish988/ChromeRelay/actions/runs/36091983364",
+  "run_id": 36091983364,
+  "commit": "9f585b4c357fd2aa97cd450a4478c3cefdbdb866",
+  "configuration": "Release",
+  "passed": true,
+  "environment": {
+    "chrome_version_command": "Google Chrome 152.0.7977.83",
+    "chrome_cdp_product": "Chrome/152.0.7977.83",
+    "macos": "26.6.2",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "ctest": 155,
+    "browser_mcp": 1146,
+    "wire_faults": 169,
+    "keyboard_faults": 63,
+    "total": 1533
+  },
+  "browser_programs": 23,
+  "all_programs_exit_zero": true,
+  "program_stderr_empty": true,
+  "owned_browser_cleanup": {
+    "browser_exit": 0,
+    "temporary_profile_removed": true,
+    "http_server_thread_stopped": true
+  },
+  "additional_installed_cli": {
+    "checks": 17,
+    "passed": true
+  },
+  "additional_installed_library_consumer": {
+    "build_and_catalog_passed": true,
+    "canonical_names": 54,
+    "compatibility_names": 75,
+    "live_browser_checks_executed": false
+  },
+  "artifact_name": "ChromeRelay-macos-verification-9f585b4c357fd2aa97cd450a4478c3cefdbdb866",
+  "artifact_source_sha256": {
+    "ctest.txt": "9d63096438cb3e922337122c16881750526f17b4fe568e6289617a0441e7f9e6",
+    "release-browser-final/owned-browser-run.json": "4a19fd97aaf743203ac19afa9bf1c661a10d7da1eaeb57d2fe300085b7939ecb",
+    "release-wire-final/receipt.json": "e765989c9a3f56ebd8cc2516d63ff5c190f3d2e3d87995aff33bb522aa93f313",
+    "release-fault-final/receipt.json": "a426a57b09b0b3839b6b79aaf310953872c035666318e041ac5f642e93427926",
+    "installed-cli.json": "4f28c5d6b1f61c7a0127ba6b37eb9e3393193ef47f75865201daceb55d468c1e",
+    "consumer.txt": "b5b1f236bc0864f8a5662b6f44002c37d8d55e50255ec0b8cbba000a07c3bf86",
+    "chrome-version.txt": "2c6eb0b1e34afebdadd66a752e1c2ec6a5e94c8909c2eed5a70af9225bc32267"
+  },
+  "open_issue": {
+    "status": "OPEN",
+    "observed_run": "https://github.com/dhtfish988/ChromeRelay/actions/runs/36091196176",
+    "description": "A previous hosted transformed OOP-frame hover did not receive its mousemove acknowledgement. The cause remains unresolved; this successful run does not demonstrate a production fix."
+  },
+  "scope": [
+    "Owned temporary Chrome and local fixtures; no personal-profile or arbitrary-website validation.",
+    "Installed CLI 17 and catalog-only consumer are additional to 1533.",
+    "The seven live installed-consumer checks and Debug/ASan results belong to separate local runs.",
+    "Historical selected ThreadSanitizer and fuzz results were not repeated by this hosted Release run.",
+    "Summary derived from downloaded workflow artifacts; original artifacts follow GitHub retention limits."
+  ]
+}

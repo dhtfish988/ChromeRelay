@@ -2,14 +2,19 @@
 
 ChromeRelay is a native MCP stdio server that attaches to an existing Chrome
 DevTools endpoint on loopback. It does not start or close your browser. The
-tested platform is macOS arm64 with Chrome 153. Linux and Windows have not been
+tested platform is macOS arm64 with Chrome 152 and 153. Linux and Windows have not been
 built or run; Windows also needs a port of the current POSIX file/stdin code.
 
 ## From source
 
-Use a C++20 compiler, CMake 3.24 or later, Ninja, Boost headers 1.85 or later and
-nlohmann/json 3.12 or later. Exact validation versions are in
-`dependencies.lock.json`. On the tested Homebrew environment:
+Use a C++20 compiler and standard library/SDK that provide `std::stop_source`
+and `std::stop_token`, CMake 3.24 or later, Ninja, Boost headers 1.85 or later
+and nlohmann/json 3.12 or later. CMake checks actual cancellation-library support;
+the C++20 language flag alone is insufficient. Local validation used Xcode 27.0,
+and hosted CI selects Xcode 26.6. These are tested toolchains, not minimum-version
+claims. Select the matching compiler and SDK before configuring a fresh build.
+Dependency versions are recorded in `dependencies.lock.json`. From this source
+checkout, on the tested Homebrew environment:
 
 ```sh
 brew install cmake ninja boost nlohmann-json
@@ -38,6 +43,13 @@ already started with these flags:
   --user-data-dir="$HOME/Library/Application Support/ChromeRelayProfile"
 ```
 
+Reusing this directory retains that profile's browser state. It is separate from
+your normal Chrome profile; ChromeRelay does not copy accounts or sessions into
+it. If you use an existing debug-enabled browser, inspect `tab_list` and explicitly
+select the intended tab with `tab_activate` before changing a page. The selected
+page is not a promise to follow the operating system's foreground tab. The
+recorded tests use disposable profiles and local pages, not personal accounts.
+
 Configure an MCP host to launch the **absolute** installed executable path with
 arguments `--port 9222`. A host using the common `mcpServers` configuration shape
 can use the following, replacing both placeholder paths:
@@ -53,6 +65,7 @@ can use the following, replacing both placeholder paths:
 }
 ```
 
+Create the directory supplied to `--allow-root` before launching the server.
 `--allow-root` may repeat and replaces the default home/temp roots. These roots
 control uploads and saved screenshots, not arbitrary page scripts. Only trusted
 local clients should access the browser's debugging port. Standard output is
@@ -66,6 +79,11 @@ schemas without connecting to Chrome using `--catalog` or `--compat-catalog`.
 over environment values. Supported MCP lifecycle versions are 2024-11-05 and
 2025-11-25. See [COMPATIBILITY.md](COMPATIBILITY.md) before migrating callers.
 
+[The local workflow example](LOCAL_WORKFLOW.md) shows an actual page, tool
+arguments and expected result. The `human` input mode uses native pacing; it
+does not reproduce the old random Bézier paths, typo injection or timing
+distribution. Its name is retained for caller compatibility.
+
 ## Library consumer and tests
 
 ```sh
@@ -76,16 +94,29 @@ build/consumer/relay-consumer
 ```
 
 The example links `ChromeRelay::chromerelay` through `find_package(ChromeRelay)`.
-Passing an optional DevTools port exercises it against an owned test browser.
+With no port, the command above checks the installed catalog only. To exercise
+its seven live browser checks in an owned temporary profile:
 
 ```sh
-python3 tests/integration/run_suite.py --build build/release \
+python3 tests/integration/with_chrome.py --evidence build/consumer-evidence \
+  build/consumer/relay-consumer
+```
+
+For the full integration suite, first prepare Python's image-decoding dependency:
+
+```sh
+python3 -m venv build/browser-python
+build/browser-python/bin/python -m pip install Pillow
+PATH="$PWD/build/browser-python/bin:$PATH" \
+  build/browser-python/bin/python tests/integration/run_suite.py --build build/release \
   --evidence /absolute/path/test-evidence/release
 ```
 
 The harness creates its own temporary headless Chrome profile and serves only
 local fixtures. It runs browser/MCP checks and bounded socket fault scenarios,
 records each exit and cleans up its own browser. The default Chrome path is the
-macOS application shown above. `with_chrome.py --chrome PATH` accepts an explicit
-browser path when running individual integrations. Unit checks and browser
-checks are separate; a successful build alone does not validate browser behavior.
+macOS application shown above. Both `run_suite.py` and `with_chrome.py` accept
+`--chrome /absolute/path/to/Chrome` for another installed Chrome build. The full
+1,533-check count combines 155 checks from `ctest` with 1,146 browser/MCP and 232
+fault checks from `run_suite.py`; the consumer and CLI checks are additional.
+A successful build or catalog-only consumer alone does not validate browser behavior.
