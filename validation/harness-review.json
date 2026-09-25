@@ -1,0 +1,81 @@
+{
+  "test_only": true,
+  "production_changed": false,
+  "browser_harness_validation": "Owned Chrome153; temporary stub child programs, including nonzero/launch/timeout failures followed by a fixture-reading successful program. Timeout control shortened only by validation wrapper from 60s to 0.5s. Captured stdout/stderr preserved; partial timeout stdout may be empty before the child is scheduled.",
+  "checks": [
+    {
+      "scenario": "first-failure",
+      "harness_exit_code": 1,
+      "program_exit_codes": [
+        7,
+        0
+      ],
+      "profile_removed": true,
+      "server_stopped": true
+    },
+    {
+      "scenario": "happy",
+      "harness_exit_code": 0,
+      "program_exit_codes": [
+        0
+      ],
+      "profile_removed": true,
+      "server_stopped": true
+    },
+    {
+      "scenario": "launch-failure",
+      "harness_exit_code": 1,
+      "program_exit_codes": [
+        null,
+        0
+      ],
+      "profile_removed": true,
+      "server_stopped": true
+    },
+    {
+      "scenario": "timeout",
+      "harness_exit_code": 1,
+      "program_exit_codes": [
+        -9,
+        0
+      ],
+      "profile_removed": true,
+      "server_stopped": true
+    },
+    {
+      "scenario": "suite-failed-browser",
+      "exit_code": 1,
+      "stages": [
+        "with_chrome.py",
+        "wire_fixture.py",
+        "keyboard_fixture.py"
+      ],
+      "stage_exit_codes": [
+        1,
+        0,
+        0
+      ],
+      "subprocesses_stubbed": true
+    },
+    {
+      "scenario": "suite-all-stages-pass",
+      "exit_code": 0,
+      "stages": [
+        "with_chrome.py",
+        "wire_fixture.py",
+        "keyboard_fixture.py"
+      ],
+      "stage_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "subprocesses_stubbed": true
+    }
+  ],
+  "all_passed": true,
+  "source_sha256": {
+    "tests/integration/with_chrome.py": "bc0cbc094b54028c28cabe43b3814a849b9c8ba1cb413900018006064124feac",
+    "tests/integration/run_suite.py": "88549d050b0bb11a1337e6d7ca40186866e5c3a185bab66f564a55705d5d6017"
+  }
+}

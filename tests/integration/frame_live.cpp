@@ -1,5 +1,6 @@
 #include <chromerelay/runtime.hpp>
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 using namespace chromerelay;
 unsigned passed = 0, failed = 0;
@@ -104,7 +105,67 @@ int main(int argc, char **argv) {
     call("keyboard_press", {{"key", "Z"}});
     check(evaluate("document.querySelector('#frame-input').value") == "Z",
           "keyboard chord routes to focused OOP frame");
-    call("element_hover", {{"selector", "#frame-button"}});
+    // Keep the original hover deadline and receipt requirement. If routing
+    // fails on a hosted browser, preserve its coordinates and actual events.
+    const std::string hover_trace = R"JS(
+      window.ownedHoverTrace=[];
+      window.ownedHoverListener=e=>{
+        if(ownedHoverTrace.length>=32)return;
+        const record={id:e.target.id,tag:e.target.tagName,x:e.clientX,y:e.clientY,
+          trusted:e.isTrusted,now:performance.now(),settled:null};
+        ownedHoverTrace.push(record);
+        setTimeout(()=>record.settled=performance.now(),0);
+      };
+      document.addEventListener('mousemove',ownedHoverListener,true);true
+    )JS";
+    evaluate(hover_trace);
+    root_eval(hover_trace);
+    auto hover_snapshot = [&]() {
+      const auto pointer = runtime.browser().pointer_position();
+      Json result={{"pointer",pointer}, {"frames",Json::array()}};
+      for(const auto &frame:runtime.browser().frames())
+        result["frames"].push_back({{"frame",frame.frame},{"session",frame.session},
+                                    {"unique_context",frame.unique_context}});
+      result["selected"] = runtime.browser().evaluate(R"JS((()=>{
+        const button=document.querySelector('#frame-button');
+        return {marker:frameMarker,now:performance.now(),visibility:document.visibilityState,
+          rect:button.getBoundingClientRect().toJSON(),hovered:button.matches(':hover'),
+          hoverChain:Array.from(document.querySelectorAll(':hover'),e=>({id:e.id,tag:e.tagName})),
+          lastPointer:globalThis.lastPointer??null,proof:frameProof,
+          trace:ownedHoverTrace,innerWidth,innerHeight,
+          clientWidth:document.documentElement.clientWidth,scrollX,scrollY};
+      })())JS", Milliseconds(1000));
+      const auto root = "(()=>{const point=" + pointer.dump() + R"JS(;
+        const owner=document.querySelector('#crossFrame'),hit=document.elementFromPoint(point.x,point.y);
+        return {now:performance.now(),visibility:document.visibilityState,
+          rect:owner.getBoundingClientRect().toJSON(),hit:hit?{id:hit.id,tag:hit.tagName}:null,
+          hoverChain:Array.from(document.querySelectorAll(':hover'),e=>({id:e.id,tag:e.tagName})),
+          trace:ownedHoverTrace,innerWidth,innerHeight,
+          clientWidth:document.documentElement.clientWidth,scrollX,scrollY};
+      })())JS";
+      result["root"] = runtime.browser().page_call("Runtime.evaluate",
+          {{"expression",root},{"returnByValue",true}},Milliseconds(1000))
+          .at("result").value("value",Json(nullptr));
+      result["layout"] = runtime.browser().page_call("Page.getLayoutMetrics",
+          Json::object(),Milliseconds(1000));
+      return result;
+    };
+    const auto hover_before = hover_snapshot();
+    try {
+      call("element_hover", {{"selector", "#frame-button"}});
+    } catch (...) {
+      const auto failure = std::current_exception();
+      Json diagnostic={{"before",hover_before}};
+      try { diagnostic["after"]=hover_snapshot(); }
+      catch(const std::exception &error) { diagnostic["snapshot_error"]=error.what(); }
+      std::cerr << "Hover routing state: " << diagnostic.dump() << '\n';
+      std::rethrow_exception(failure);
+    }
+    const std::string clear_hover_trace =
+        "document.removeEventListener('mousemove',ownedHoverListener,true);"
+        "delete window.ownedHoverListener;delete window.ownedHoverTrace;true";
+    evaluate(clear_hover_trace);
+    root_eval(clear_hover_trace);
     check(
         evaluate("document.querySelector('#frame-button').matches(':hover')") ==
             true,

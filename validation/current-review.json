@@ -1,5 +1,5 @@
 {
-  "recorded_utc": "2026-09-25T03:38:34.032405+00:00",
+  "recorded_utc": "2026-09-25T03:50:11.853123+00:00",
   "reviewed_base_commit": "284b7f1adcee1925e19ac6b0cb9f18782723488a",
   "profiles": {
     "debug": {
@@ -134,13 +134,15 @@
     "src/browser/page_services.cpp": "4039accae455c62c1ac0b6ac97e7faeace2dec396384879514d71d0d6e3b9c60",
     "tests/integration/cookie_context_live.cpp": "02094497ad3a5270ea7f7c50839fa000ac9777980021ad27da9d49d40a6f9a51",
     "tests/integration/files_live.cpp": "db779f1fb2022dd2781a62e9b49365d2a03f53404dd7965c15ac6113681819b8",
-    "tests/integration/run_suite.py": "428d0ac45acdc43b46c04bdc83e24047bfefa130a3264843d633ebd18580f731",
+    "tests/integration/run_suite.py": "88549d050b0bb11a1337e6d7ca40186866e5c3a185bab66f564a55705d5d6017",
     "tests/integration/target_affinity_live.cpp": "851dd9a5f4e76df650b7bb37b9afd9390a90fb8ebefe160269142991ee3547f7",
     "tests/integration/services_live.cpp": "f331224b200db4f603385601acd3116aa7bd734fdfbb4d1ea5157f766c592f96",
     "tests/integration/click_live.cpp": "0bfdf7dc128d466b757794ab1507d93f0d3cdecae6d480e3815450b5bbcfa2ee",
     "tests/integration/workflow_live.cpp": "3699555a410b3411c90b80246d01728546c877bf75cbeaf5d76f963bf850ea61",
     "docs/CLICKS.md": "eb9fff87612bc8d2f6bd5c414db6a7d6e777a4863f587b8fd92d2ad2d25226dc",
-    "tests/fixtures/capture.html": "84d4a8df3c7bd99cd677df04fad0cd2b43f3e2ac895ba28d5c20f869ffdb8ee3"
+    "tests/fixtures/capture.html": "84d4a8df3c7bd99cd677df04fad0cd2b43f3e2ac895ba28d5c20f869ffdb8ee3",
+    "tests/integration/frame_live.cpp": "785d5280cbe5402bbee05c48f8df94ba72cce1aa2436867f7b719b6568c8f4ed",
+    "tests/integration/with_chrome.py": "bc0cbc094b54028c28cabe43b3814a849b9c8ba1cb413900018006064124feac"
   },
   "limits": [
     "macOS arm64 and owned Chrome only",
@@ -345,6 +347,24 @@
         "owned_cleanup": true,
         "transcript": "review-2026-09-25/capture-sanitize153.txt",
         "sha256": "7a22281c9a6a9e4632409a3db99ed03122e4192e977dd9aa8fffc9178de49931"
+      }
+    ]
+  },
+  "diagnostic_followup": {
+    "scope": "Tests and harness diagnostics only; production code unchanged. No hover fix claimed.",
+    "failed_hosted_run": "https://github.com/dhtfish988/ChromeRelay/actions/runs/36091196176",
+    "unresolved": "One hosted transformed-frame hover did not receive its mousemove acknowledgement. The actual event and routing state were not recorded in that run. Local original sequences and repeated same-coordinate hovers passed on Chrome 152/153, so a same-coordinate failure was not established.",
+    "change": "Keep the exact deadline and receipt requirement; record before/after geometry, hover state and actual events on failure. Collect all independent program and socket-group failures while preserving nonzero final status and cleanup.",
+    "harness_review": "harness-review.json",
+    "checks": [
+      {
+        "profile": "release152",
+        "chrome": "152.0.7977.82",
+        "passed": 58,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/frame-diagnostic-release152.txt",
+        "sha256": "8382a89a79ab6644a990becd9bc8d025895a952252b40ed054f876b86c7a6def"
       }
     ]
   }

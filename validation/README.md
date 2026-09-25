@@ -80,3 +80,12 @@ explain how a valid 15-pixel scrollbar can make the CSS content area 785 pixels
 wide in an 800-pixel emulated window. The original cloud layout was not recorded.
 Production capture code is unchanged. Four focused runs each passed 106 file,
 PNG and MCP-file checks; their transcripts and scope are also recorded above.
+
+A later hosted run timed out waiting for a mousemove receipt in a transformed
+cross-process frame. The original sequence and repeated same-coordinate hovers
+passed on local Chrome 152/153; the cloud trigger is unresolved. Frame tests now
+record routing and event state on failure without changing deadlines or success
+criteria. The owned-browser harness also collects subsequent independent program
+results while Chrome remains alive, and the suite collects both socket-fault
+groups after a browser-group failure. Any failed program still fails the run.
+Targeted harness failure/cleanup checks are recorded in `harness-review.json`.

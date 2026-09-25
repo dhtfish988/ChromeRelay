@@ -34,14 +34,20 @@ def main():
     commands = [('browser-final', ['with_chrome.py', *browser_options, '--binary', binary, *programs]),
                 ('wire-final', ['wire_fixture.py', '--binary', str(build / 'relay-wire-fault-tests')]),
                 ('fault-final', ['keyboard_fixture.py', '--binary', str(build / 'relay-keyboard-fault-tests')])]
+    failed = []
     for suffix, command in commands:
         receipt = str(prefix) + '-' + suffix
         argv = [sys.executable, str(root / 'tests/integration' / command[0]),
                 '--evidence', receipt, *command[1:]]
         with Path(receipt + '-run.txt').open('w') as log:
-            subprocess.run(argv, cwd=root, stdout=log, stderr=subprocess.STDOUT, check=True)
-        print(suffix + ' passed', flush=True)
+            completed = subprocess.run(argv, cwd=root, stdout=log, stderr=subprocess.STDOUT)
+        if completed.returncode:
+            failed.append(suffix)
+            print(suffix + ' failed (exit ' + str(completed.returncode) + ')', flush=True)
+        else:
+            print(suffix + ' passed', flush=True)
+    return 1 if failed else 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

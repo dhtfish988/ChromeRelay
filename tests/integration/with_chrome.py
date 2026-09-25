@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from fixture_server import FixtureHandler
@@ -50,15 +51,35 @@ def main():
                             raise TimeoutError('owned Chrome did not expose DevTools within 20 seconds')
                         time.sleep(0.05)
                     port = int(marker.read_text().splitlines()[0])
-                    for index, program in enumerate(args.programs):
+                    for program in args.programs:
+                        if browser.poll() is not None:
+                            raise RuntimeError('owned Chrome exited before the next integration program')
                         command = [str(Path(program).resolve()), str(port)]
-                        completed = subprocess.run(command, capture_output=True, timeout=60, env={**os.environ, "CHROMERELAY_FIXTURE_URL": fixture_url, "CHROMERELAY_CHILD_EVIDENCE": str(evidence / (Path(program).name + '-children')), **({"CHROMERELAY_BINARY": str(Path(args.binary).resolve())} if args.binary else {})})
-                        (evidence / (Path(program).name + '.stdout')).write_bytes(completed.stdout)
-                        (evidence / (Path(program).name + '.stderr')).write_bytes(completed.stderr)
-                        results.append({'program': command[0], 'exit_code': completed.returncode,
-                                        'browser_alive_after': browser.poll() is None})
-                        if completed.returncode:
-                            raise RuntimeError(completed.stderr.decode(errors='replace'))
+                        result = {'program': command[0], 'exit_code': None}
+                        try:
+                            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                    start_new_session=True, env={**os.environ, "CHROMERELAY_FIXTURE_URL": fixture_url, "CHROMERELAY_CHILD_EVIDENCE": str(evidence / (Path(program).name + '-children')), **({"CHROMERELAY_BINARY": str(Path(args.binary).resolve())} if args.binary else {})}) as process:
+                                try:
+                                    stdout, stderr = process.communicate(timeout=60)
+                                except subprocess.TimeoutExpired:
+                                    result['timed_out'] = True
+                                    # Stop this program's helper processes too before
+                                    # running another independent program.
+                                    try:
+                                        os.killpg(process.pid, signal.SIGKILL)
+                                    except ProcessLookupError:
+                                        pass
+                                    stdout, stderr = process.communicate()
+                                result['exit_code'] = process.returncode
+                        except OSError as error:
+                            stdout, stderr = b'', str(error).encode()
+                            result['launch_error'] = str(error)
+                        (evidence / (Path(program).name + '.stdout')).write_bytes(stdout)
+                        (evidence / (Path(program).name + '.stderr')).write_bytes(stderr)
+                        result['browser_alive_after'] = browser.poll() is None
+                        results.append(result)
+                        if not result['browser_alive_after']:
+                            raise RuntimeError('owned Chrome exited during an integration program')
                 finally:
                     if browser.poll() is None:
                         os.killpg(browser.pid, signal.SIGTERM)
@@ -76,8 +97,12 @@ def main():
             'owned_browser_exit': browser.returncode if browser else None,
             'temporary_profile_removed_after_exit': profile is not None and not profile.exists(),
             'http_server_thread_stopped': not serving.is_alive()}, indent=2) + '\n')
-    print(json.dumps({'passed': True, 'programs': len(results), 'profile_cleaned': not profile.exists()}))
+    failed = [Path(result['program']).name for result in results
+              if result['exit_code'] != 0 or result.get('timed_out')]
+    print(json.dumps({'passed': not failed, 'programs': len(results),
+                      'failed_programs': failed, 'profile_cleaned': not profile.exists()}))
+    return 1 if failed else 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
