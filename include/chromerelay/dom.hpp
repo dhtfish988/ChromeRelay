@@ -23,6 +23,7 @@ public:
   ~ElementLease();
   Json call(const Json &arguments, Milliseconds timeout);
   const std::string &identity() const { return identity_; }
+  const std::string &session() const { return session_; }
 
 private:
   BrowserWorkspace *browser_;

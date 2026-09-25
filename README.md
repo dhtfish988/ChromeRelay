@@ -39,14 +39,20 @@ server exits by disconnecting; it does not close your browser. Repeated
   file limits, composition, deadlines and side effects.
 - [CHECKPOINT.md](docs/CHECKPOINT.md): measured acceptance and exact boundaries.
 
-Final Debug, Release and ASan/UBSan each passed **1,487 checks**: 155 contracts,
-1,100 actual Chrome/MCP checks and 232 socket/keyboard fault checks. Selected
-ThreadSanitizer coverage passed **549 checks**. The installed CLI passed 17 checks;
-an independently built installed-library consumer passed seven browser checks.
-A finite protocol fuzz run completed **67,587 executions in 31 seconds** without
-a crash or sanitizer report. All browser tests used owned temporary Chrome
-profiles and local fixtures, with cleanup receipts. The Release MCP suite used
-the installed executable.
+The 2026-09-25 follow-up passed **1,497 checks** in each of Debug, Release and
+ASan/UBSan: 155 contracts, 1,110 actual Chrome/MCP checks and 232 socket/keyboard
+fault checks. Ten new checks cover page ownership during interrupted typing and
+remote element ownership across tab/frame changes. Closing a page during an
+action can no longer send the remaining typing to another tab. The installed
+CLI passed 17 checks; an independently built installed-library consumer passed
+seven browser checks. All browser tests used owned temporary Chrome profiles
+and local fixtures, with cleanup receipts. The Release MCP suite used the
+installed executable.
+
+Historical 2026-09-23 validation includes **549 selected ThreadSanitizer checks**
+and a finite protocol fuzz run of **67,587 executions in 31 seconds** without a
+crash or sanitizer report. Those two runs were not repeated for the follow-up;
+see [validation](validation/README.md) for the distinction and recorded scope.
 
 Validated platform: macOS arm64, Chrome 153. Linux/Windows have not been run;
 Windows needs adaptation of POSIX file/stdin handling. Arbitrary page layouts,

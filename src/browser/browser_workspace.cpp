@@ -30,6 +30,14 @@ private:
   BrowserWorkspace::Deadline prior_;
 };
 } // namespace
+BrowserWorkspace::PageScope::PageScope(BrowserWorkspace &browser)
+    : browser_(browser), previous_(browser.bound_target_) {
+  if (!previous_)
+    browser_.bound_target_ = &target_;
+}
+BrowserWorkspace::PageScope::~PageScope() {
+  browser_.bound_target_ = previous_;
+}
 BrowserWorkspace::Deadline BrowserWorkspace::exchange_deadline(Deadline limit) {
   const auto prior = deadline_;
   deadline_ = limit;
@@ -248,6 +256,13 @@ void BrowserWorkspace::enable_session(const std::string &session) {
 std::string BrowserWorkspace::current_session() {
   connect();
   refresh();
+  if (bound_target_) {
+    if (bound_target_->empty())
+      *bound_target_ = current_;
+    else if (*bound_target_ != current_)
+      throw RelayError("Selected page closed during action; remaining commands "
+                       "cannot move to another tab");
+  }
   attach();
   return sessions_.at(current_);
 }
@@ -384,6 +399,16 @@ Json BrowserWorkspace::context_call(const std::string &method,
   prepare_frames();
   if (!frames_.empty())
     session = frames_.back().session;
+  auto result = send(method, parameters, session, timeout);
+  pump();
+  return result;
+}
+Json BrowserWorkspace::session_call(const std::string &session,
+                                    const std::string &method,
+                                    const Json &parameters,
+                                    Milliseconds timeout) {
+  if (!connected() || session.empty())
+    throw RelayError("Remote object session is no longer available");
   auto result = send(method, parameters, session, timeout);
   pump();
   return result;

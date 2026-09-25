@@ -84,8 +84,8 @@ ElementLease::~ElementLease() {
 Json ElementLease::call(const Json &arguments, Milliseconds timeout) {
   const auto function =
       std::string("function(a){return (") + resources::dom + ").on(this,a)}";
-  return remote_value(browser_->context_call(
-      "Runtime.callFunctionOn",
+  return remote_value(browser_->session_call(
+      session_, "Runtime.callFunctionOn",
       {{"objectId", identity_},
        {"functionDeclaration", function},
        {"arguments", Json::array({{{"value", arguments}}})},
@@ -192,6 +192,7 @@ Json DomActions::query(Json arguments, bool by_value) {
 }
 ElementLease DomActions::locate(Json arguments, bool visible, bool enabled,
                                 bool editable) {
+  BrowserWorkspace::PageScope page(browser_);
   arguments["operation"] = "locate";
   while (true) {
     const auto remote = query(arguments, false);
@@ -715,6 +716,7 @@ Json DomActions::drag(const Json &arguments) {
           {"to", {{"x", ex}, {"y", ey}}}};
 }
 Json DomActions::execute(const std::string &operation, const Json &arguments) {
+  BrowserWorkspace::PageScope page(browser_);
   if (operation == "mouse")
     return mouse(arguments);
   if (operation == "drag")

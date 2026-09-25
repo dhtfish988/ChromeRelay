@@ -13,6 +13,21 @@ struct FrameScope {
 };
 class BrowserWorkspace {
 public:
+  // Bind a multi-command action on its first page access. A closed page may be
+  // replaced in the tab inventory, but the pending action must not follow it.
+  // Nested scopes share their outer binding; pure delays need no connection.
+  class PageScope {
+  public:
+    explicit PageScope(BrowserWorkspace &browser);
+    ~PageScope();
+    PageScope(const PageScope &) = delete;
+    PageScope &operator=(const PageScope &) = delete;
+
+  private:
+    BrowserWorkspace &browser_;
+    std::string target_;
+    std::string *previous_;
+  };
   using Deadline = std::optional<std::chrono::steady_clock::time_point>;
   explicit BrowserWorkspace(unsigned port) : port_(port) {}
   ~BrowserWorkspace() { disconnect(); }
@@ -35,6 +50,10 @@ public:
   Json context_call(const std::string &method,
                     const Json &parameters = Json::object(),
                     Milliseconds timeout = Milliseconds(10000));
+  // Remote object IDs belong to their creating session, independently of the
+  // current tab/frame selection. Never reroute or replay these calls.
+  Json session_call(const std::string &session, const std::string &method,
+                    const Json &parameters, Milliseconds timeout);
   Json browser_call(const std::string &method,
                     const Json &parameters = Json::object(),
                     Milliseconds timeout = Milliseconds(10000));
@@ -80,6 +99,7 @@ public:
   void cancel_pointer() noexcept;
 
 private:
+  std::string *bound_target_ = nullptr;
   Json run_script(const std::string &expression, Milliseconds timeout,
                   bool by_value, bool retry_replaced);
   Json await_navigation(const std::string &session,

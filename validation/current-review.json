@@ -1,0 +1,148 @@
+{
+  "recorded_utc": "2026-09-25T02:24:45.871088+00:00",
+  "reviewed_base_commit": "284b7f1adcee1925e19ac6b0cb9f18782723488a",
+  "profiles": {
+    "debug": {
+      "passed": true,
+      "contracts": 155,
+      "browser": 1110,
+      "browser_programs": {
+        "relay-wire-tests": 7,
+        "relay-browser-tests": 25,
+        "relay-dom-tests": 91,
+        "relay-keyboard-tests": 169,
+        "relay-input-target-tests": 97,
+        "relay-condition-tests": 19,
+        "relay-click-tests": 118,
+        "relay-frame-tests": 58,
+        "relay-services-tests": 55,
+        "relay-pointer-tests": 30,
+        "relay-files-tests": 41,
+        "relay-workflow-tests": 41,
+        "relay-navigation-tests": 29,
+        "relay-recovery-tests": 13,
+        "relay-target-affinity-tests": 10,
+        "verify_pngs.py": 24,
+        "mcp_live.py": 52,
+        "mcp_files.py": 23,
+        "mcp_workflows.py": 53,
+        "mcp_navigation.py": 14,
+        "mcp_cancellation.py": 25,
+        "mcp_compatibility.py": 116
+      },
+      "socket_faults": 232,
+      "total": 1497,
+      "owned_browser_cleanup": true,
+      "binary_sha256": "c9b6598cdf3975330a23455e1c15cbf7097bcb2ab4adb55c2eb13523b038e04d"
+    },
+    "release": {
+      "passed": true,
+      "contracts": 155,
+      "browser": 1110,
+      "browser_programs": {
+        "relay-wire-tests": 7,
+        "relay-browser-tests": 25,
+        "relay-dom-tests": 91,
+        "relay-keyboard-tests": 169,
+        "relay-input-target-tests": 97,
+        "relay-condition-tests": 19,
+        "relay-click-tests": 118,
+        "relay-frame-tests": 58,
+        "relay-services-tests": 55,
+        "relay-pointer-tests": 30,
+        "relay-files-tests": 41,
+        "relay-workflow-tests": 41,
+        "relay-navigation-tests": 29,
+        "relay-recovery-tests": 13,
+        "relay-target-affinity-tests": 10,
+        "verify_pngs.py": 24,
+        "mcp_live.py": 52,
+        "mcp_files.py": 23,
+        "mcp_workflows.py": 53,
+        "mcp_navigation.py": 14,
+        "mcp_cancellation.py": 25,
+        "mcp_compatibility.py": 116
+      },
+      "socket_faults": 232,
+      "total": 1497,
+      "owned_browser_cleanup": true,
+      "binary_sha256": "843f9a1f60c7d9fe613d8a074eec465ed115e98318feb02870a022bfd856eced"
+    },
+    "sanitize": {
+      "passed": true,
+      "contracts": 155,
+      "browser": 1110,
+      "browser_programs": {
+        "relay-wire-tests": 7,
+        "relay-browser-tests": 25,
+        "relay-dom-tests": 91,
+        "relay-keyboard-tests": 169,
+        "relay-input-target-tests": 97,
+        "relay-condition-tests": 19,
+        "relay-click-tests": 118,
+        "relay-frame-tests": 58,
+        "relay-services-tests": 55,
+        "relay-pointer-tests": 30,
+        "relay-files-tests": 41,
+        "relay-workflow-tests": 41,
+        "relay-navigation-tests": 29,
+        "relay-recovery-tests": 13,
+        "relay-target-affinity-tests": 10,
+        "verify_pngs.py": 24,
+        "mcp_live.py": 52,
+        "mcp_files.py": 23,
+        "mcp_workflows.py": 53,
+        "mcp_navigation.py": 14,
+        "mcp_cancellation.py": 25,
+        "mcp_compatibility.py": 116
+      },
+      "socket_faults": 232,
+      "total": 1497,
+      "owned_browser_cleanup": true,
+      "binary_sha256": "93c817c47252ace971b783772bc1f4ad71a988281bc5be7a49f8f67721749225"
+    }
+  },
+  "installed_cli_checks": 17,
+  "installed_consumer_checks": 7,
+  "prefixed_failure": "remaining text escaped into a surviving tab: \"bc\"",
+  "changes": {
+    "pending_action": "Bind DOM/file actions to their original target; never continue in a fallback tab after target closure",
+    "remote_objects": "Route leased remote objects and file-input selection to the creating session"
+  },
+  "source_sha256": {
+    "CMakeLists.txt": "0b733d5528f806a7280450f2c414ca68bb334ce8e547eb4c68370b3629d8ba1e",
+    "include/chromerelay/browser.hpp": "45a5071c6b147df7d19c5fe77bc19ade604b59546c1f559d742e27e91cac3bb1",
+    "include/chromerelay/dom.hpp": "cf699d6b6a1fffa0596dabe8df1998f6fe86971255f801fa7717111caacd1c3c",
+    "src/browser/browser_workspace.cpp": "ddb38e16ec2a2e6d4fbc5ef3f6a6939d2fb3ca42ad189cfa75cb11de7f2d5527",
+    "src/actions/dom_actions.cpp": "8ac044e17c9307e17ca195ddd6e0ba5b245a26677ab77f2d00e29b2fce70f723",
+    "src/actions/file_actions.cpp": "a60dacd511fc1e82da4c157f5e77c7d33c213752ab21308d673a8f47922e8e6b",
+    "tests/integration/run_suite.py": "9264d099113c3965fac01c75e81f854d029dc22d78de457dc2d14b204da9374b",
+    "tests/integration/target_affinity_live.cpp": "851dd9a5f4e76df650b7bb37b9afd9390a90fb8ebefe160269142991ee3547f7",
+    "README.md": "40f7a1d6a62fb4c3787b3a77cd144a224477e2846756b903c6913ce9382ae0a1",
+    "docs/CANCELLATION.md": "ac6349619b9ee4229ab9cd256f9e964554c80d11ccdd442efad8223d2a94533e",
+    "docs/FRAMES.md": "585f80496c03b3bb538dba34f9cb00a6fcf2d355f800d31a295f16d9d41487cb",
+    "docs/CHECKPOINT.md": "75f8787388c214b3b5226c5ce46c8f0b0bbb21d9a5c21c84b4cafdd60e3d68bd"
+  },
+  "limits": [
+    "macOS arm64 and owned Chrome only",
+    "ThreadSanitizer and finite fuzz runs remain historical; not repeated in this follow-up",
+    "Input already dispatched is not rolled back; arbitrary page code can still change focus or layout within a tab",
+    "Original delivery archives were not regenerated"
+  ],
+  "published_test_logs": {
+    "debug": {
+      "path": "review-2026-09-25/tests-debug.txt",
+      "sha256": "d0ac6ad186ffeb61c723637237f5160e937a8919d6fa30a87b72d3941f1b8844"
+    },
+    "release": {
+      "path": "review-2026-09-25/tests-release.txt",
+      "sha256": "047bd170fe40229ceb5f8273d728c8019b3bc78d816b4a12f1002fafacd6d99a"
+    },
+    "sanitize": {
+      "path": "review-2026-09-25/tests-sanitize.txt",
+      "sha256": "5bab43463d0247effbc7d93a0f43fc2452d4d0b2727608074eab7f0c3d883dde"
+    }
+  },
+  "hosted_ci_url": "https://github.com/dhtfish988/ChromeRelay/actions/workflows/verify.yml",
+  "hosted_ci_note": "Check the Actions result for the exact Git commit; local results do not imply a hosted run passed."
+}

@@ -20,11 +20,11 @@ def main():
     prefix.parent.mkdir(parents=True, exist_ok=True)
     native = ['wire', 'browser', 'dom', 'keyboard', 'input-target', 'condition',
               'click', 'frame', 'services', 'pointer', 'files', 'workflow',
-              'navigation', 'recovery']
+              'navigation', 'recovery', 'target-affinity']
     scripts = ['verify_pngs.py', 'mcp_live.py', 'mcp_files.py', 'mcp_workflows.py',
                'mcp_navigation.py', 'mcp_cancellation.py', 'mcp_compatibility.py']
     if args.thread_subset:
-        native = ['input-target', 'condition', 'click', 'recovery']
+        native = ['input-target', 'condition', 'click', 'recovery', 'target-affinity']
         scripts = ['mcp_cancellation.py']
     # PNG verification consumes the images emitted by relay-files-tests.
     programs = [str(build / ('relay-' + name + '-tests')) for name in native]

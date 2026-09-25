@@ -5,6 +5,7 @@
 #include <limits>
 namespace chromerelay {
 Json DomActions::capture_bounds(const std::string &selector) {
+  BrowserWorkspace::PageScope page(browser_);
   auto element = locate({{"selector", selector}}, true);
   browser_.reveal_frames(clock_.remaining());
   element.call({{"operation", "scroll"}}, clock_.remaining());
@@ -32,6 +33,7 @@ Json DomActions::capture_bounds(const std::string &selector) {
           {"height", bottom - top}};
 }
 Json FileActions::upload(const Json &arguments) {
+  BrowserWorkspace::PageScope page(browser_);
   const auto names = arguments.at("files").is_array()
                          ? arguments.at("files")
                          : Json::array({arguments.at("files")});
@@ -70,7 +72,7 @@ Json FileActions::upload(const Json &arguments) {
   if (names.empty())
     input.call({{"operation", "clear_files"}}, clock_.remaining());
   else
-    browser_.context_call("DOM.setFileInputFiles",
+    browser_.session_call(input.session(), "DOM.setFileInputFiles",
                           {{"objectId", input.identity()}, {"files", paths}},
                           clock_.remaining());
   // The native command's response is followed by a selected-document turn so
@@ -85,6 +87,7 @@ Json FileActions::upload(const Json &arguments) {
   return {{"uploaded", names.size()}};
 }
 Json FileActions::screenshot(const Json &arguments) {
+  BrowserWorkspace::PageScope page(browser_);
   std::optional<ImageDestination> destination;
   if (arguments.contains("path"))
     destination.emplace(paths_.output(arguments.at("path").get<std::string>()));

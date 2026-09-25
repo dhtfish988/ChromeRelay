@@ -36,6 +36,14 @@ further workflow children and drops the pending host-side CDP response mapping.
 A late Chrome response cannot become the response to a different request.
 Runtime deadline scopes and dispatch depth unwind before the next root call.
 
+DOM actions and upload/capture actions also bind to the page selected on their
+first browser access. Closing that page during a multi-command action fails the
+remaining work instead of sending it to another tab. This includes slow typing,
+locator polling and multi-field forms. A later explicit request may select the
+surviving tab normally. The binding is lazy, so a time-only wait still needs no
+browser connection. It does not prevent navigation within the original tab or
+undo input already dispatched there.
+
 Bounded cleanup masks cancellation temporarily so native held mouse buttons,
 drag interception, keyboard key-up, scoped input observers, bindings and remote
 object handles can be released. Failed or cancelled session initialization

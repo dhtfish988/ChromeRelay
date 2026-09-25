@@ -20,6 +20,13 @@ variables and handlers are available. An isolated replacement world is not used.
 Runtime evaluation uses Chrome's unique context identity; DOM node resolution also
 uses the corresponding numeric context where required by the protocol.
 
+`ElementLease` retains both the remote object ID and its creating session. Its
+calls and file-input commands use that original session even if a library caller
+changes the selected tab or frame while holding the lease. A destroyed session
+or object reports failure; its command is never retried against a different
+object. This also allows a still-live parent or OOP frame lease to be read after
+selection changes. The workspace and its leases remain single-executor objects.
+
 The same frame can move between a page process and a separate iframe process
 during navigation. Frame identity stays selected while its session/context is
 resolved again. Failed attachment after a target disappears and a missing-session
