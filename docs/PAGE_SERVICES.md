@@ -58,6 +58,16 @@ deletion passes the actual name/domain/path and optional partition key through
 `Network.deleteCookies`. Empty cookie values are accepted. Expiration values are
 Unix seconds. The tool does not bypass Chrome's own cookie policy.
 
+The context ID reported by a page is kept for tab filtering and private-context
+isolation. Before a cookie command or new-tab command, `Target.getBrowserContexts`
+identifies the default profile explicitly. Only a matching
+`defaultBrowserContextId` is omitted from the command: Chrome 152 exposes that
+internal ID in target metadata but rejects it in `Storage` calls. Private or
+unrecognized IDs remain explicit, including after their context is disposed;
+failure never triggers a retry against the default profile. Omitting the ID on
+a private page session is not an isolation mechanism: `Storage` still addresses
+the default profile in the tested versions.
+
 Local/session storage operates in the selected document's real default context.
 Keys and values are literal JSON data; empty keys, Unicode, `__proto__` and
 `constructor` roundtrip without prototype semantics. Missing reads return null.
@@ -68,6 +78,12 @@ Tests cover cookie aliases, path coexistence/deletion, HttpOnly/secure flags,
 empty values, expiration, browser-context isolation, explicit clear, and local
 versus session storage with reload persistence. Partitioned-cookie deletion and
 third-party-cookie restrictions still need dedicated cases.
+
+The separate 18-check `cookie_context_live.cpp` regression exercises default
+cookie access, private get/set/clear/delete isolation, tab creation within the
+selected private context, and rejection after that context is disposed while
+the default profile remains intact. Its browser is owned by the test harness;
+it deliberately replaces test tabs to select the private context unambiguously.
 
 ## Highlight and accessibility
 

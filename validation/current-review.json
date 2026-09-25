@@ -1,11 +1,10 @@
 {
-  "recorded_utc": "2026-09-25T02:24:45.871088+00:00",
+  "recorded_utc": "2026-09-25T02:57:26.740943+00:00",
   "reviewed_base_commit": "284b7f1adcee1925e19ac6b0cb9f18782723488a",
   "profiles": {
     "debug": {
       "passed": true,
       "contracts": 155,
-      "browser": 1110,
       "browser_programs": {
         "relay-wire-tests": 7,
         "relay-browser-tests": 25,
@@ -16,8 +15,9 @@
         "relay-click-tests": 118,
         "relay-frame-tests": 58,
         "relay-services-tests": 55,
+        "relay-cookie-context-tests": 18,
         "relay-pointer-tests": 30,
-        "relay-files-tests": 41,
+        "relay-files-tests": 59,
         "relay-workflow-tests": 41,
         "relay-navigation-tests": 29,
         "relay-recovery-tests": 13,
@@ -30,48 +30,16 @@
         "mcp_cancellation.py": 25,
         "mcp_compatibility.py": 116
       },
+      "browser": 1146,
       "socket_faults": 232,
-      "total": 1497,
-      "owned_browser_cleanup": true,
-      "binary_sha256": "c9b6598cdf3975330a23455e1c15cbf7097bcb2ab4adb55c2eb13523b038e04d"
-    },
-    "release": {
-      "passed": true,
-      "contracts": 155,
-      "browser": 1110,
-      "browser_programs": {
-        "relay-wire-tests": 7,
-        "relay-browser-tests": 25,
-        "relay-dom-tests": 91,
-        "relay-keyboard-tests": 169,
-        "relay-input-target-tests": 97,
-        "relay-condition-tests": 19,
-        "relay-click-tests": 118,
-        "relay-frame-tests": 58,
-        "relay-services-tests": 55,
-        "relay-pointer-tests": 30,
-        "relay-files-tests": 41,
-        "relay-workflow-tests": 41,
-        "relay-navigation-tests": 29,
-        "relay-recovery-tests": 13,
-        "relay-target-affinity-tests": 10,
-        "verify_pngs.py": 24,
-        "mcp_live.py": 52,
-        "mcp_files.py": 23,
-        "mcp_workflows.py": 53,
-        "mcp_navigation.py": 14,
-        "mcp_cancellation.py": 25,
-        "mcp_compatibility.py": 116
-      },
-      "socket_faults": 232,
-      "total": 1497,
-      "owned_browser_cleanup": true,
-      "binary_sha256": "843f9a1f60c7d9fe613d8a074eec465ed115e98318feb02870a022bfd856eced"
+      "total": 1533,
+      "owned_cleanup": true,
+      "chrome": "Chrome/153.0.8010.54",
+      "binary_sha256": "6b778ed9d705b6db91cb22f011099e8d2957d68370ff90caec6ad858049bddc3"
     },
     "sanitize": {
       "passed": true,
       "contracts": 155,
-      "browser": 1110,
       "browser_programs": {
         "relay-wire-tests": 7,
         "relay-browser-tests": 25,
@@ -82,8 +50,45 @@
         "relay-click-tests": 118,
         "relay-frame-tests": 58,
         "relay-services-tests": 55,
+        "relay-cookie-context-tests": 18,
         "relay-pointer-tests": 30,
-        "relay-files-tests": 41,
+        "relay-files-tests": 59,
+        "relay-workflow-tests": 41,
+        "relay-navigation-tests": 29,
+        "relay-recovery-tests": 13,
+        "relay-target-affinity-tests": 10,
+        "verify_pngs.py": 24,
+        "mcp_live.py": 52,
+        "mcp_files.py": 23,
+        "mcp_workflows.py": 53,
+        "mcp_navigation.py": 14,
+        "mcp_cancellation.py": 25,
+        "mcp_compatibility.py": 116
+      },
+      "browser": 1146,
+      "socket_faults": 232,
+      "total": 1533,
+      "owned_cleanup": true,
+      "chrome": "Chrome/153.0.8010.54",
+      "binary_sha256": "7d071da3b63270d45737882c9e7e138699f13fec2d60d2a8d09d4bc10f458bbd"
+    },
+    "release": {
+      "passed": true,
+      "contracts": 155,
+      "browser": 1146,
+      "browser_programs": {
+        "relay-wire-tests": 7,
+        "relay-browser-tests": 25,
+        "relay-dom-tests": 91,
+        "relay-keyboard-tests": 169,
+        "relay-input-target-tests": 97,
+        "relay-condition-tests": 19,
+        "relay-click-tests": 118,
+        "relay-frame-tests": 58,
+        "relay-services-tests": 55,
+        "relay-cookie-context-tests": 18,
+        "relay-pointer-tests": 30,
+        "relay-files-tests": 59,
         "relay-workflow-tests": 41,
         "relay-navigation-tests": 29,
         "relay-recovery-tests": 13,
@@ -97,9 +102,10 @@
         "mcp_compatibility.py": 116
       },
       "socket_faults": 232,
-      "total": 1497,
-      "owned_browser_cleanup": true,
-      "binary_sha256": "93c817c47252ace971b783772bc1f4ad71a988281bc5be7a49f8f67721749225"
+      "total": 1533,
+      "owned_cleanup": true,
+      "chrome": "152.0.7977.82",
+      "binary_sha256": "502ab61d736bc4099907e6eff6e267caba15ba8e041c701e4606b9dbe92d7005"
     }
   },
   "installed_cli_checks": 17,
@@ -107,21 +113,29 @@
   "prefixed_failure": "remaining text escaped into a surviving tab: \"bc\"",
   "changes": {
     "pending_action": "Bind DOM/file actions to their original target; never continue in a fallback tab after target closure",
-    "remote_objects": "Route leased remote objects and file-input selection to the creating session"
+    "remote_objects": "Route leased remote objects and file-input selection to the creating session",
+    "browser_context": "Omit the reported context ID only when Chrome explicitly identifies it as default; keep private and disposed IDs explicit for cookie and new-tab commands.",
+    "directory_selection": "Send one native selection, await the original element/session trusted change or cancel and settled receipt, then check the final count. Deadline/cancellation do not replay the command."
   },
   "source_sha256": {
-    "CMakeLists.txt": "30d5cfd0c8f9b17b238bd3cecb22cd858e16232befeeb32d06e67ae339ee4e2c",
-    "include/chromerelay/browser.hpp": "45a5071c6b147df7d19c5fe77bc19ade604b59546c1f559d742e27e91cac3bb1",
-    "include/chromerelay/dom.hpp": "cf699d6b6a1fffa0596dabe8df1998f6fe86971255f801fa7717111caacd1c3c",
-    "src/browser/browser_workspace.cpp": "ddb38e16ec2a2e6d4fbc5ef3f6a6939d2fb3ca42ad189cfa75cb11de7f2d5527",
-    "src/actions/dom_actions.cpp": "8ac044e17c9307e17ca195ddd6e0ba5b245a26677ab77f2d00e29b2fce70f723",
-    "src/actions/file_actions.cpp": "a60dacd511fc1e82da4c157f5e77c7d33c213752ab21308d673a8f47922e8e6b",
-    "tests/integration/run_suite.py": "9264d099113c3965fac01c75e81f854d029dc22d78de457dc2d14b204da9374b",
-    "tests/integration/target_affinity_live.cpp": "851dd9a5f4e76df650b7bb37b9afd9390a90fb8ebefe160269142991ee3547f7",
-    "README.md": "b8851f6bdf6851d11c63908ca80d2894440c1635a9768d00154bb1b6610ec49c",
+    "CMakeLists.txt": "4b935865da9545e0076af06674ae1eb5cf40ad658daaece6e0651b3249b6ddbe",
+    "README.md": "fb46cdc92a79631ae4f7007507dc86658c872aefb68ec707871497b06a20a339",
     "docs/CANCELLATION.md": "ac6349619b9ee4229ab9cd256f9e964554c80d11ccdd442efad8223d2a94533e",
+    "docs/CHECKPOINT.md": "27b18e5a874b2ea78dad093bc2a7daa8f4b58d928e779ac71ed06019992fc787",
+    "docs/FILES_AND_CAPTURE.md": "7259f21456493ae713226ce7373b98841d2df5c5df2cc69f74d03473a0333e72",
     "docs/FRAMES.md": "585f80496c03b3bb538dba34f9cb00a6fcf2d355f800d31a295f16d9d41487cb",
-    "docs/CHECKPOINT.md": "75f8787388c214b3b5226c5ce46c8f0b0bbb21d9a5c21c84b4cafdd60e3d68bd"
+    "docs/PAGE_SERVICES.md": "43bd88ed9195718776da8046a00af8a87fa8c07ce6800a60798da39e22edf718",
+    "include/chromerelay/browser.hpp": "11978810052cd5f3978b7e35fe4c990e100ea17bef38d24b9d11cca72affbe20",
+    "include/chromerelay/dom.hpp": "cf699d6b6a1fffa0596dabe8df1998f6fe86971255f801fa7717111caacd1c3c",
+    "src/actions/dom_actions.cpp": "8ac044e17c9307e17ca195ddd6e0ba5b245a26677ab77f2d00e29b2fce70f723",
+    "src/actions/file_actions.cpp": "546f35820012a2ee8af5d7b0172e05d096a5ae4383dc800fdcabea91756d87a0",
+    "src/browser/browser_workspace.cpp": "29bd09920b787e58c45dab13b36e1cc64070b20eb91f7e13e229411465346aba",
+    "src/browser/input_observer.cpp": "f2fc6893d1c6e1445efab89e2e4df39e925f16f6c78fa73e8de81725394c23b3",
+    "src/browser/page_services.cpp": "4039accae455c62c1ac0b6ac97e7faeace2dec396384879514d71d0d6e3b9c60",
+    "tests/integration/cookie_context_live.cpp": "02094497ad3a5270ea7f7c50839fa000ac9777980021ad27da9d49d40a6f9a51",
+    "tests/integration/files_live.cpp": "9b9ae530a746c144d7912ddfd89fb1b1141b1a98c1d8b3dd7d136e1bf7effcc7",
+    "tests/integration/run_suite.py": "428d0ac45acdc43b46c04bdc83e24047bfefa130a3264843d633ebd18580f731",
+    "tests/integration/target_affinity_live.cpp": "851dd9a5f4e76df650b7bb37b9afd9390a90fb8ebefe160269142991ee3547f7"
   },
   "limits": [
     "macOS arm64 and owned Chrome only",
@@ -132,18 +146,19 @@
   "published_test_logs": {
     "debug": {
       "path": "review-2026-09-25/tests-debug.txt",
-      "sha256": "d0ac6ad186ffeb61c723637237f5160e937a8919d6fa30a87b72d3941f1b8844"
+      "sha256": "e8ccd38dc52a4e5bd2b8e0cc0cd0bf05b6549459e089ff9234db67b7ceed0ede"
     },
     "release": {
       "path": "review-2026-09-25/tests-release.txt",
-      "sha256": "047bd170fe40229ceb5f8273d728c8019b3bc78d816b4a12f1002fafacd6d99a"
+      "sha256": "5982de17360cdace81a0f0375ffb71a7804d4cb0b4a5301e50c482c9c1f6f6af"
     },
     "sanitize": {
       "path": "review-2026-09-25/tests-sanitize.txt",
-      "sha256": "5bab43463d0247effbc7d93a0f43fc2452d4d0b2727608074eab7f0c3d883dde"
+      "sha256": "034d1e71fd58077fb1a0b6d22318328c2bfd84b164447425b3c458bbc78dadd7"
     }
   },
   "hosted_ci_url": "https://github.com/dhtfish988/ChromeRelay/actions/workflows/verify.yml",
   "hosted_ci_note": "Check the Actions result for the exact Git commit; local results do not imply a hosted run passed.",
-  "build_follow_up": "The build capability probe and toolchain documentation were added after the local full suites; production sources are unchanged. See current-review-build.json and the CI result for this commit."
+  "new_checks": 46,
+  "local_launch_observation": "The first installed CLI check timed out at --version during concurrent validation. Two separate version calls immediately completed in 0.009 seconds each, and the unchanged full CLI suite then passed 17 checks. The transient delay was not attributed to a proven cause; no timeout was increased."
 }

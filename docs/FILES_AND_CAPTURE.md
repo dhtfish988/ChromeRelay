@@ -55,10 +55,25 @@ Limits: 128 files and 1 GiB per batch; directory traversal also limits depth to
 32 and visited entries to 4096. Oversized regular files are rejected from metadata
 without reading their contents into the server. Native nonempty selection uses
 `DOM.setFileInputFiles`, including OOP frame sessions, and produces trusted browser
-events in the tested version. Chrome 153 did not clear an existing selection for
+events in the tested Chrome 152 and 153 builds. Chrome 153 did not clear an existing selection for
 an empty CDP path array, so clearing explicitly sets the file input's empty value
 and dispatches ordinary DOM input/change events. Those clearing events are
 synthetic; the implementation does not claim otherwise.
+
+The native command is issued once. Its reply can precede directory enumeration,
+so a listener is installed on the original element before selection. Completion
+requires that selection's trusted `change` or `cancel` event and an event-loop
+turn after it, followed by a check of the resulting file count. Repeated selection
+of the same files and empty directories are supported. A previous selection with
+the same count or relative names cannot complete the new operation merely by
+matching those values.
+
+The observation retains its original session and action deadline. Missing event
+delivery, cancellation or a detached target fails without reissuing the selection
+or locating a replacement input. Listener, binding and remote-object cleanup is
+bounded. Failure does not undo a selection Chrome already performed. Empty-array
+clearing retains its separate synthetic-event path and does not wait for a
+trusted native-selection event.
 
 `uploaded` counts requested paths, matching the old handler; one directory thus
 reports 1 even when it contains several selected files. This action selects
@@ -92,7 +107,11 @@ files, pinned-root/parent/destination replacements, changed input metadata,
 complete atomic writes, limits and corrupt image rejection. `files_live.cpp`
 checks actual selected names and text/binary bytes, directory relative paths,
 batch refusal without changing prior selection, OOP selection, clearing and
-real screenshots. `verify_pngs.py` decodes eight captures and checks known pixels,
+real screenshots. Its 96-member nested-directory regression also replaces a
+selection with identical names and counts but different contents, repeats regular
+files and empty directories, and blocks completion-event delivery to verify
+deadline/cancellation cleanup without duplicate selection. Target detachment
+does not recreate or reselect the input. `verify_pngs.py` decodes eight captures and checks known pixels,
 including full-page, scrolled viewport, offscreen element, scale 2 and a rotated
 OOP frame crop.
 

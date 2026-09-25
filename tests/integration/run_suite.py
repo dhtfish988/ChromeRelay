@@ -10,6 +10,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--build', required=True)
     parser.add_argument('--binary')
+    parser.add_argument('--chrome', help='Chrome executable for the owned browser fixture')
     parser.add_argument('--evidence', required=True)
     parser.add_argument('--thread-subset', action='store_true')
     args = parser.parse_args()
@@ -19,7 +20,7 @@ def main():
     prefix = Path(args.evidence).resolve()
     prefix.parent.mkdir(parents=True, exist_ok=True)
     native = ['wire', 'browser', 'dom', 'keyboard', 'input-target', 'condition',
-              'click', 'frame', 'services', 'pointer', 'files', 'workflow',
+              'click', 'frame', 'services', 'cookie-context', 'pointer', 'files', 'workflow',
               'navigation', 'recovery', 'target-affinity']
     scripts = ['verify_pngs.py', 'mcp_live.py', 'mcp_files.py', 'mcp_workflows.py',
                'mcp_navigation.py', 'mcp_cancellation.py', 'mcp_compatibility.py']
@@ -29,7 +30,8 @@ def main():
     # PNG verification consumes the images emitted by relay-files-tests.
     programs = [str(build / ('relay-' + name + '-tests')) for name in native]
     programs += [str(root / 'tests/integration' / name) for name in scripts]
-    commands = [('browser-final', ['with_chrome.py', '--binary', binary, *programs]),
+    browser_options = ['--chrome', args.chrome] if args.chrome else []
+    commands = [('browser-final', ['with_chrome.py', *browser_options, '--binary', binary, *programs]),
                 ('wire-final', ['wire_fixture.py', '--binary', str(build / 'relay-wire-fault-tests')]),
                 ('fault-final', ['keyboard_fixture.py', '--binary', str(build / 'relay-keyboard-fault-tests')])]
     for suffix, command in commands:

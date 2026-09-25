@@ -648,9 +648,8 @@ Json BrowserWorkspace::status() {
 }
 Json BrowserWorkspace::create_tab(const std::string &url) {
   connect();
-  Json parameters = {{"url", url}};
-  if (!context_.empty())
-    parameters["browserContextId"] = context_;
+  Json parameters = context_parameters();
+  parameters["url"] = url;
   auto created = send("Target.createTarget", parameters);
   current_ = created.at("targetId");
   frames_.clear();
@@ -666,6 +665,18 @@ Json BrowserWorkspace::create_tab(const std::string &url) {
           {"index", std::distance(targets_.begin(), position)},
           {"target", current_},
           {"url", url}};
+}
+Json BrowserWorkspace::context_parameters() {
+  if (context_.empty())
+    return Json::object();
+  const auto inventory = send("Target.getBrowserContexts");
+  // Some Chrome versions expose the default profile's internal ID in target
+  // metadata but reject that ID in Storage commands. Omit it only when Chrome
+  // explicitly identifies it as the default. Missing/disposed private contexts
+  // retain their ID and fail, rather than gaining access to the default profile.
+  if (inventory.value("defaultBrowserContextId", std::string()) == context_)
+    return Json::object();
+  return {{"browserContextId", context_}};
 }
 Json BrowserWorkspace::activate_tab(std::size_t index) {
   connect();

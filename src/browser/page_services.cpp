@@ -15,9 +15,7 @@ Json BrowserWorkspace::arm_dialog(const Json &arguments) {
 
 Json BrowserWorkspace::manage_cookies(const Json &arguments) {
   current_session();
-  Json scope = Json::object();
-  if (!context_.empty())
-    scope["browserContextId"] = context_;
+  Json scope = context_parameters();
   const auto action = arguments.value("action", std::string("get"));
   if (action == "clear") {
     browser_call("Storage.clearCookies", scope);

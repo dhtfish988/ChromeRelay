@@ -1,4 +1,4 @@
-Selected local test transcripts. Absolute workspace paths are replaced; browser HTTP access logs are omitted.
+Selected final local test transcripts. Absolute workspace paths are replaced; browser HTTP access logs are omitted.
 
 UpdateCTestConfiguration  from :<source>/DartConfiguration.tcl
 Test project <source>/build/release
@@ -15,7 +15,7 @@ test 1
 1: Working Directory: <source>/build/release
 1: Test timeout computed to be: 10000000
 1: 26 foundation checks passed; 0 failed
-1/5 Test #1: foundation .......................   Passed    0.84 sec
+1/5 Test #1: foundation .......................   Passed   12.45 sec
 test 2
     Start 2: mcp-contract
 
@@ -23,7 +23,7 @@ test 2
 2: Working Directory: <source>/build/release
 2: Test timeout computed to be: 10000000
 2: 23 MCP checks passed; 0 failed
-2/5 Test #2: mcp-contract .....................   Passed    0.54 sec
+2/5 Test #2: mcp-contract .....................   Passed   13.58 sec
 test 3
     Start 3: file-contract
 
@@ -31,7 +31,7 @@ test 3
 3: Working Directory: <source>/build/release
 3: Test timeout computed to be: 10000000
 3: 40 file contract checks passed; 0 failed
-3/5 Test #3: file-contract ....................   Passed    0.56 sec
+3/5 Test #3: file-contract ....................   Passed   12.77 sec
 test 4
     Start 4: workflow-contract
 
@@ -39,7 +39,7 @@ test 4
 4: Working Directory: <source>/build/release
 4: Test timeout computed to be: 10000000
 4: 44 workflow contract checks passed; 0 failed
-4/5 Test #4: workflow-contract ................   Passed    0.78 sec
+4/5 Test #4: workflow-contract ................   Passed    8.48 sec
 test 5
     Start 5: cancellation-contract
 
@@ -47,22 +47,22 @@ test 5
 5: Working Directory: <source>/build/release
 5: Test timeout computed to be: 20
 5: 22 cancellation contract checks passed; 0 failed
-5/5 Test #5: cancellation-contract ............   Passed    0.68 sec
+5/5 Test #5: cancellation-contract ............   Passed    9.83 sec
 
 100% tests passed, 0 tests failed out of 5
 
-Total Test time (real) =   3.41 sec
+Total Test time (real) =  57.12 sec
 
 
 --- relay-wire-tests ---
 
 {
   "browser": {
-    "jsVersion": "15.3.76.13",
-    "product": "Chrome/153.0.8010.54",
+    "jsVersion": "15.2.124.21",
+    "product": "Chrome/152.0.7977.82",
     "protocolVersion": "1.3",
-    "revision": "@ab3ecba863fd7852cc9b0fe5736187e19ed52a1c",
-    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    "revision": "@d04cdb24d67b081f6cf80200ffc5233f44b61109",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
   },
   "checks": 7,
   "events": 2,
@@ -110,6 +110,11 @@ Total Test time (real) =   3.41 sec
 55 page services checks passed; 0 failed
 
 
+--- relay-cookie-context-tests ---
+
+18 cookie-context checks passed; 0 failed
+
+
 --- relay-pointer-tests ---
 
 30 pointer checks passed; 0 failed
@@ -117,7 +122,7 @@ Total Test time (real) =   3.41 sec
 
 --- relay-files-tests ---
 
-41 live file/capture checks passed; 0 failed
+59 live file/capture checks passed; 0 failed
 
 
 --- relay-workflow-tests ---
@@ -177,7 +182,7 @@ Total Test time (real) =   3.41 sec
 
 --- Owned browser cleanup receipt ---
 
-{"passed": true, "programs": 22, "profile_cleaned": true}
+{"passed": true, "programs": 23, "profile_cleaned": true}
 
 
 --- wire fixture summary ---

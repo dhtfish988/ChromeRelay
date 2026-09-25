@@ -1,3 +1,4 @@
+#include "input_receipt.hpp"
 #include <algorithm>
 #include <array>
 #include <chromerelay/files.hpp>
@@ -69,16 +70,23 @@ Json FileActions::upload(const Json &arguments) {
     paths_.verify(file);
   for (const auto &file : members)
     paths_.verify(file);
-  if (names.empty())
+  if (names.empty()) {
     input.call({{"operation", "clear_files"}}, clock_.remaining());
-  else
+    // Clearing is a synchronous DOM operation with synthetic events. It does
+    // not produce the trusted native-selection receipt used below.
+    browser_.evaluate("new Promise(resolve=>setTimeout(()=>resolve(true),0))",
+                      clock_.remaining());
+  } else {
+    // Acknowledgement of setFileInputFiles does not imply that asynchronous
+    // directory enumeration has finished. Bind completion to this selection's
+    // trusted event, not a count which a prior selection may already satisfy.
+    InputReceipt receipt(browser_, input.identity(), "file-selection", 0,
+                         clock_.remaining());
     browser_.session_call(input.session(), "DOM.setFileInputFiles",
                           {{"objectId", input.identity()}, {"files", paths}},
                           clock_.remaining());
-  // The native command's response is followed by a selected-document turn so
-  // input/change handlers in an OOP frame are observable to the next action.
-  browser_.evaluate("new Promise(resolve=>setTimeout(()=>resolve(true),0))",
-                    clock_.remaining());
+    receipt.finish(clock_.remaining());
+  }
   const auto after =
       input.call({{"operation", "file_input"}}, clock_.remaining());
   if (after.at("count") != (directory ? members.size() : names.size()))

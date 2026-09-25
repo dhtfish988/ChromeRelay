@@ -1,9 +1,9 @@
 # Local validation record
 
-The 2026-09-25 review passed **1,497 checks** in each fresh Debug, Release and
-ASan/UBSan build on macOS arm64: 155 contracts, 1,110 browser/MCP checks and
-232 socket faults. Ten new checks cover action target and remote-object session
-affinity. Installed CLI (17 checks) and independent consumer (seven) passed.
+The 2026-09-25 review passed **1,533 checks** in each fresh Debug, Release and
+ASan/UBSan build on macOS arm64: 155 contracts, 1,146 browser/MCP checks and
+232 socket faults. Forty-six new checks cover action target/session affinity, cookie-context
+isolation and asynchronous file selection. Installed CLI (17 checks) and independent consumer (seven) passed.
 See [the current verification record](../docs/CHECKPOINT.md).
 
 ChromeRelay 1.0.0 was initially validated locally on macOS arm64 on 2026-09-23.
@@ -48,3 +48,10 @@ The first hosted run exposed missing C++20 cancellation support in the macOS 15
 default Xcode 16.4 library/SDK. Configuration now checks the actual compile/link
 capability before the main build. CI explicitly uses Xcode 26.6 on macOS 26; see
 the build review above for the failed run and exact validation scope.
+
+Final local Release verification used Chrome for Testing 152.0.7977.82; Debug
+and ASan/UBSan used Chrome 153.0.8010.54. The hosted Chrome 152 failure led to
+an explicit default-context mapping fix; independent probes on both versions
+also exposed asynchronous directory completion. The final full transcripts above
+include both fixes. A transient local CLI startup timeout and successful unchanged
+follow-up checks are recorded in the machine-readable result.

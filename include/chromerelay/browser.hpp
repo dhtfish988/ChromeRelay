@@ -100,6 +100,7 @@ public:
 
 private:
   std::string *bound_target_ = nullptr;
+  Json context_parameters();
   Json run_script(const std::string &expression, Milliseconds timeout,
                   bool by_value, bool retry_replaced);
   Json await_navigation(const std::string &session,

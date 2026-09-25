@@ -2,11 +2,13 @@
 
 ## Follow-up review — 2026-09-25
 
-Fresh Debug, Release and ASan/UBSan each passed **1,497 checks**: 155 unit
-contracts, 1,110 owned-browser/MCP checks in 22 programs, and 232 socket/keyboard
+Fresh Debug, Release and ASan/UBSan each passed **1,533 checks**: 155 unit
+contracts, 1,146 owned-browser/MCP checks in 23 programs, and 232 socket/keyboard
 fault checks. The installed Release CLI passed 17 checks and an independently
 built installed-library consumer passed seven browser checks. Owned browser
-cleanup receipts passed. No new ThreadSanitizer or fuzz run is claimed here.
+cleanup receipts passed. Debug/ASan used Chrome 153.0.8010.54; the final local
+Release matrix used Chrome for Testing 152.0.7977.82. Hosted CI uses its recorded
+Chrome build separately. No new ThreadSanitizer or fuzz run is claimed here.
 
 The new `target_affinity_live.cpp` contributes ten checks. A pre-fix run closed
 the typing page after `a` in a slow `abc` input and observed `bc` in a different
@@ -16,6 +18,28 @@ next explicit action. `ElementLease` calls and file-input commands also retain
 their creating session rather than resolving their object IDs in the currently
 selected tab/frame. The regression covers live leases across selection changes
 and rejection after their OOP frame is destroyed.
+
+The 18 new `cookie_context_live.cpp` checks address a second failure discovered
+on hosted Chrome 152.0.7977.83 and reproduced locally on the adjacent .82 build.
+That version reports an internal default profile ID in target metadata but
+rejects it in `Storage` commands. Cookie and new-tab commands now omit the ID
+only when Chrome explicitly identifies it as the default. Private IDs remain
+explicit, including after disposal; no error fallback accesses the default
+profile. Get/set/clear/delete and private tab creation are tested independently.
+
+The file suite increased from 41 to 59 checks. Chrome 152 can acknowledge
+`DOM.setFileInputFiles` before directory enumeration completes. Selection now
+waits for the original element's trusted completion event and a following event
+turn, then checks the count. Same-name/count replacement must expose the new
+file contents; reselecting files or empty directories completes. Deadline,
+cancellation and detachment failures clean up without repeating the command.
+The focused file/PNG/MCP tests also passed on both Chrome 152 and 153.
+
+Configuration now compiles and links actual `std::stop_source` and
+`std::stop_token` use before building. A compiler accepting C++20 mode alone is
+insufficient when its standard library/SDK lacks these facilities. The local
+positive and deliberately unavailable-header negative probes behaved as
+expected; the older hosted Xcode failure is recorded in the validation history.
 
 The published [validation summary](../validation/README.md) records this review.
 The sections below preserve the **2026-09-23 delivery** evidence and counts;

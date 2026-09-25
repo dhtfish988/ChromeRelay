@@ -30,15 +30,17 @@ std::string BrowserWorkspace::observe_input(const std::string &element,
     const std::string observer =
         R"observe(function(binding,kind,ordinal,lifetime){
       const node=this,signal=globalThis[binding];delete globalThis[binding];
+      const kinds=kind==='file-selection'?['change','cancel']:[kind];
       let timer,watchdog;
-      const cancel=()=>{node.ownerDocument.removeEventListener(kind,accept,true);clearTimeout(timer);clearTimeout(watchdog)};
+      const remove=()=>{for(const type of kinds)node.ownerDocument.removeEventListener(type,accept,true)};
+      const cancel=()=>{remove();clearTimeout(timer);clearTimeout(watchdog)};
       const accept=event=>{
         if(event.isTrusted && event.composedPath().includes(node) && (ordinal===0 || event.detail>=ordinal)){
-          node.ownerDocument.removeEventListener(kind,accept,true);
+          remove();
           signal('received');timer=setTimeout(()=>{signal('settled');cancel()},0);
         }
       };
-      node.ownerDocument.addEventListener(kind,accept,true);
+      for(const type of kinds)node.ownerDocument.addEventListener(type,accept,true);
       watchdog=setTimeout(cancel,lifetime);
       return {cancel};
     })observe";

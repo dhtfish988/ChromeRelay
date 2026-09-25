@@ -47,11 +47,13 @@ server exits by disconnecting; it does not close your browser. Repeated
   file limits, composition, deadlines and side effects.
 - [CHECKPOINT.md](docs/CHECKPOINT.md): measured acceptance and exact boundaries.
 
-The 2026-09-25 follow-up passed **1,497 checks** in each of Debug, Release and
-ASan/UBSan: 155 contracts, 1,110 actual Chrome/MCP checks and 232 socket/keyboard
-fault checks. Ten new checks cover page ownership during interrupted typing and
-remote element ownership across tab/frame changes. Closing a page during an
-action can no longer send the remaining typing to another tab. The installed
+The 2026-09-25 follow-up passed **1,533 checks** in each of Debug, Release and
+ASan/UBSan: 155 contracts, 1,146 actual Chrome/MCP checks and 232 socket/keyboard
+fault checks. Forty-six new checks cover interrupted typing and remote element
+ownership, default/private cookie-context isolation, and asynchronous file
+selection. Closing a page during an action stops remaining typing; directory
+uploads wait for their own completion event without repeating the selection.
+Debug and ASan/UBSan used Chrome 153; Release used Chrome 152. The installed
 CLI passed 17 checks; an independently built installed-library consumer passed
 seven browser checks. All browser tests used owned temporary Chrome profiles
 and local fixtures, with cleanup receipts. The Release MCP suite used the
@@ -62,7 +64,7 @@ and a finite protocol fuzz run of **67,587 executions in 31 seconds** without a
 crash or sanitizer report. Those two runs were not repeated for the follow-up;
 see [validation](validation/README.md) for the distinction and recorded scope.
 
-Validated platform: macOS arm64, Chrome 153. Linux/Windows have not been run;
+Validated platform: macOS arm64, Chrome 152 and 153. Linux/Windows have not been run;
 Windows needs adaptation of POSIX file/stdin handling. Arbitrary page layouts,
 extended Playwright selectors and every possible parameter combination are not
 claimed equivalent. Drag is within one selected document; snapshots explicitly

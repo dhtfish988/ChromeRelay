@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <thread>
 #include <unistd.h>
 using namespace chromerelay;
 namespace fs = std::filesystem;
@@ -87,6 +88,12 @@ int main(int argc, char **argv) {
           "browser reads actual uploaded file bytes");
     check(eval("fileProof.at(-1).trusted") == true,
           "upload change event comes from browser");
+    eval("window.sameFileProof=[];for(const kind of ['change','cancel'])"
+         "document.querySelector('#files').addEventListener(kind,e=>"
+         "sameFileProof.push({kind:e.type,trusted:e.isTrusted}));true");
+    call("form_upload", {{"selector", "#files"}, {"files", first.string()}});
+    check(eval("sameFileProof.length===1&&sameFileProof[0].trusted") == true,
+          "reselecting the same regular file completes on one trusted event");
     call("upload_file",
          {{"selector", "#files"},
           {"files", Json::array({first.string(), second.string()})}});
@@ -185,6 +192,159 @@ int main(int argc, char **argv) {
         "directory upload rejects symlink members before browser selection");
     check(eval("document.querySelector('#directory').files.length") == 2,
           "rejected directory preserves earlier selection");
+    // Directory enumeration completes after the native command acknowledges
+    // the request. Both selections have identical names, sizes and counts.
+    // A stale FileList must not satisfy the second selection's completion.
+    const auto folder_a = allowed / "one/same", folder_b = allowed / "two/same";
+    for (unsigned index = 0; index < 96; ++index) {
+      const auto relative =
+          fs::path(std::to_string(index)) / "nested/member.txt";
+      fs::create_directories((folder_a / relative).parent_path());
+      fs::create_directories((folder_b / relative).parent_path());
+      write(folder_a / relative, "A:" + std::to_string(index));
+      write(folder_b / relative, "B:" + std::to_string(index));
+    }
+    eval("window.directoryProof=[];for(const kind of ['change','cancel'])"
+         "document.querySelector('#directory').addEventListener(kind,e=>"
+         "directoryProof.push({kind:e.type,trusted:e.isTrusted,count:e.target."
+         "files.length}));true");
+    call("form_upload",
+         {{"selector", "#directory"}, {"files", folder_a.string()}});
+    check(eval("document.querySelector('#directory').files.length") == 96,
+          "asynchronous directory selection waits for all nested members");
+    check(eval("directoryProof.length===1&&directoryProof[0].trusted&&"
+               "directoryProof[0].count===96") == true,
+          "directory completion includes its one trusted selection event");
+    const auto relative_paths =
+        eval("[...document.querySelector('#directory').files].map(f=>f."
+             "webkitRelativePath).sort()");
+    call("form_upload",
+         {{"selector", "#directory"}, {"files", folder_b.string()}});
+    check(eval("[...document.querySelector('#directory').files].map(f=>f."
+               "webkitRelativePath).sort()") == relative_paths,
+          "replacement fixture really has the same relative names and count");
+    check(eval("directoryProof.length===2&&directoryProof[1].trusted") == true,
+          "same-count replacement waits for its own trusted event");
+    check(eval("Promise.all([...document.querySelector('#directory').files]."
+               "map(f=>f.text())).then(values=>values.length===96&&values."
+               "every(v=>v.startsWith('B:')))") == true,
+          "same-name same-size replacement exposes the new contents before "
+          "return");
+    call("form_upload",
+         {{"selector", "#directory"}, {"files", folder_b.string()}});
+    check(eval("directoryProof.length===3&&directoryProof[2].trusted") == true,
+          "reselecting the same directory completes exactly one new selection");
+    fs::create_directory(allowed / "empty-directory");
+    call("form_upload", {{"selector", "#directory"},
+                         {"files", (allowed / "empty-directory").string()}});
+    check(eval("document.querySelector('#directory').files.length===0&&"
+               "directoryProof.length===4") == true,
+          "empty directory selection waits for its completion event");
+    call("form_upload", {{"selector", "#directory"},
+                         {"files", (allowed / "empty-directory").string()}});
+    check(eval("directoryProof.length===5") == true,
+          "reselecting an empty directory completes without waiting for files");
+    // Block receipt delivery while preserving the native selection itself.
+    // Deadlines and cancellation must not reissue the selecting command.
+    eval("window.blockedSelection=[];window.blockFileReceipt=e=>{if(e.target."
+         "id==='directory'&&e.isTrusted){blockedSelection.push(e.type);e."
+         "stopImmediatePropagation()}};"
+         "for(const kind of "
+         "['change','cancel'])window.addEventListener(kind,blockFileReceipt,"
+         "true);true");
+    call("browser_configure", {{"long_timeout", 300}});
+    rejects(
+        [&] {
+          call("form_upload",
+               {{"selector", "#directory"}, {"files", folder_a.string()}});
+        },
+        "missing native selection receipt reaches its existing deadline");
+    call("browser_configure", {{"long_timeout", 30000}});
+    check(eval("blockedSelection.length===1&&document.querySelector('#"
+               "directory').files.length===96") == true,
+          "deadline failure leaves one completed selection without replay");
+    check(eval("Object.getOwnPropertyNames(window).filter(k=>k.startsWith('__"
+               "chromerelay_receipt_')).length") == 0,
+          "timed-out upload removes its receipt binding");
+    eval("blockedSelection=[];true");
+    DevToolsChannel upload_observer(static_cast<unsigned>(std::stoul(argv[1])));
+    const auto upload_session =
+        upload_observer
+            .call("Target.attachToTarget",
+                  {{"targetId", runtime.browser().current_target()},
+                   {"flatten", true}})
+            .at("sessionId")
+            .get<std::string>();
+    std::stop_source stop_upload;
+    std::exception_ptr stopping_error;
+    std::jthread stopping([&] {
+      try {
+        const auto until =
+            std::chrono::steady_clock::now() + Milliseconds(3000);
+        while (upload_observer
+                   .call("Runtime.evaluate",
+                         {{"expression", "blockedSelection.length===1"},
+                          {"returnByValue", true}},
+                         upload_session)
+                   .at("result")
+                   .at("value") != true) {
+          if (std::chrono::steady_clock::now() >= until)
+            throw RelayError("upload observer did not see native selection");
+          std::this_thread::sleep_for(Milliseconds(5));
+        }
+        stop_upload.request_stop();
+      } catch (...) {
+        stopping_error = std::current_exception();
+      }
+    });
+    bool upload_cancelled = false;
+    {
+      CancellationScope scope(stop_upload.get_token());
+      try {
+        call("form_upload",
+             {{"selector", "#directory"}, {"files", folder_b.string()}});
+      } catch (const RequestCancelled &) {
+        upload_cancelled = true;
+      }
+    }
+    stopping.join();
+    if (stopping_error)
+      std::rethrow_exception(stopping_error);
+    check(upload_cancelled,
+          "cancellation interrupts pending selection acknowledgement");
+    check(eval("blockedSelection.length===1&&document.querySelector('#"
+               "directory').files.length===96") == true,
+          "cancelled upload never repeats native selection");
+    check(eval("Object.getOwnPropertyNames(window).filter(k=>k.startsWith('__"
+               "chromerelay_receipt_')).length") == 0,
+          "cancelled upload removes its receipt binding");
+    eval("for(const kind of "
+         "['change','cancel'])window.removeEventListener(kind,blockFileReceipt,"
+         "true);true");
+    call("form_upload",
+         {{"selector", "#directory"}, {"files", folder_a.string()}});
+    check(
+        eval(
+            "Promise.all([...document.querySelector('#directory').files].map(f="
+            ">f.text())).then(values=>values.every(v=>v.startsWith('A:')))") ==
+            true,
+        "a subsequent upload works after acknowledgement cancellation");
+    eval("window.detachedSelection=0;window.removeFileInput=e=>{if(e.target.id="
+         "=='directory'&&e.isTrusted){detachedSelection++;e.target.remove();e."
+         "stopImmediatePropagation()}};"
+         "window.addEventListener('change',removeFileInput,true);true");
+    call("browser_configure", {{"long_timeout", 300}});
+    rejects(
+        [&] {
+          call("form_upload",
+               {{"selector", "#directory"}, {"files", folder_b.string()}});
+        },
+        "detached selection target fails instead of being reacquired");
+    call("browser_configure", {{"long_timeout", 30000}});
+    check(eval("detachedSelection===1&&document.querySelector('#directory')==="
+               "null") == true,
+          "target detachment never repeats or recreates the input");
+    eval("window.removeEventListener('change',removeFileInput,true);true");
     call("page_navigate", {{"url", std::string(site) + "/capture.html"}});
     runtime.browser().page_call("Emulation.setDeviceMetricsOverride",
                                 {{"width", 800},
