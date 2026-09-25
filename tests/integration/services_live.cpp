@@ -1,5 +1,6 @@
 #include <chromerelay/runtime.hpp>
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 using namespace chromerelay;
 unsigned passed = 0, failed = 0;
@@ -183,50 +184,107 @@ int main(int argc, char **argv) {
     check(call("get_cookies").at("cookies").empty(),
           "clear selected browser context cookies");
 
-    eval("document.querySelector('#person').style.setProperty('outline','1px "
-         "dotted blue','important');true");
-    const auto outline =
-        eval("document.querySelector('#person').style.outline");
+    eval(R"JS(
+      document.querySelector('#person').style.setProperty('outline','1px dotted blue','important');
+      window.ownedHighlightState=()=>{
+        const e=document.querySelector('#person'), key=Symbol.for('ChromeRelay.outlineLease'), lease=e[key];
+        return {outline:e.style.outline,priority:e.style.getPropertyPriority('outline'),
+          width:e.style.outlineWidth,style:e.style.outlineStyle,color:e.style.outlineColor,
+          computedColor:getComputedStyle(e).outlineColor,hasLease:Object.prototype.hasOwnProperty.call(e,key),timer:lease?.timer??null,
+          now:performance.now(),visibility:document.visibilityState,
+          timers:(window.ownedHighlightTimers??[]).map(r=>({id:r.id,delay:r.delay,cancelled:r.cancelled,fired:r.fired}))};
+      };true
+    )JS");
+    auto highlight_check = [&](auto predicate, const char *label) {
+      const auto state = eval("ownedHighlightState()");
+      const bool matches = predicate(state);
+      if (!matches)
+        std::cerr << "Highlight state: " << state.dump() << '\n';
+      check(matches, label);
+    };
+    const auto outline = eval("ownedHighlightState().outline");
+    // Inspect the visible style before scheduling the short expiry. The actual
+    // expiry is observed through its lease; host sleep is not renderer progress.
+    call("element_highlight",
+         {{"selector", "#person"}, {"duration", 5000}, {"color", "#0f0"}});
+    highlight_check([](const Json &state) {
+      return state.at("computedColor") == "rgb(0, 255, 0)";
+    }, "highlight visible in computed style");
     call("element_highlight",
          {{"selector", "#person"}, {"duration", 150}, {"color", "#0f0"}});
-    check(eval("getComputedStyle(document.querySelector('#person'))."
-               "outlineColor") == "rgb(0, 255, 0)",
-          "highlight visible in computed style");
-    call("page_wait", {{"ms", 180}});
-    check(eval("document.querySelector('#person').style.outline") == outline,
-          "highlight restores original outline");
-    check(eval("document.querySelector('#person').style.getPropertyPriority('"
-               "outline')") == "important",
-          "highlight restores original priority");
+    try {
+      call("page_wait", {{"type", "function"},
+                         {"expression", "!ownedHighlightState().hasLease"},
+                         {"timeout", 5000}});
+    } catch (...) {
+      const auto failure = std::current_exception();
+      try {
+        std::cerr << "Highlight expiry wait: "
+                  << eval("ownedHighlightState()").dump() << '\n';
+      } catch (...) {}
+      std::rethrow_exception(failure);
+    }
+    highlight_check([&](const Json &state) {
+      return state.at("outline") == outline && state.at("hasLease") == false;
+    }, "highlight restores original outline");
+    highlight_check([](const Json &state) {
+      return state.at("priority") == "important";
+    }, "highlight restores original priority");
+
+    // Record the real production callbacks with a controlled page scheduler.
+    // Replaying an already-cancelled callback explicitly tests stale callback
+    // ordering without relying on a narrow interval between two host sleeps.
+    eval(R"JS(
+      window.ownedHighlightTimers=[];
+      window.ownedSetTimeout=window.setTimeout;window.ownedClearTimeout=window.clearTimeout;
+      window.setTimeout=(callback,delay,...args)=>{
+        const record={id:1000000000+ownedHighlightTimers.length,delay,cancelled:false,fired:false};
+        record.fire=()=>{record.fired=true;callback(...args)};
+        ownedHighlightTimers.push(record);return record.id;
+      };
+      window.clearTimeout=id=>{
+        const record=ownedHighlightTimers.find(r=>r.id===id);
+        if(record)record.cancelled=true;else ownedClearTimeout(id);
+      };true
+    )JS");
     call("element_highlight", {{"selector", "#person"}, {"duration", 120}});
     call("element_highlight",
          {{"selector", "#person"}, {"duration", 250}, {"color", "blue"}});
-    call("page_wait", {{"ms", 160}});
-    check(eval("document.querySelector('#person').style.outlineWidth") == "3px",
-          "earlier highlight timer cannot cancel later highlight");
-    call("page_wait", {{"ms", 150}});
-    check(eval("document.querySelector('#person').style.outline") == outline,
-          "overlapping highlights restore pre-highlight style");
+    eval("ownedHighlightTimers[0].fire();true");
+    highlight_check([](const Json &state) {
+      const auto &timers = state.at("timers");
+      return state.at("width") == "3px" && state.at("color") == "blue" &&
+             state.at("hasLease") == true && timers.size() == 2 &&
+             timers.at(0).at("delay") == 120 &&
+             timers.at(0).at("cancelled") == true &&
+             timers.at(0).at("fired") == true &&
+             timers.at(1).at("delay") == 250 &&
+             state.at("timer") == timers.at(1).at("id");
+    }, "earlier highlight timer cannot cancel later highlight");
+    eval("ownedHighlightTimers[1].fire();true");
+    highlight_check([&](const Json &state) {
+      return state.at("outline") == outline &&
+             state.at("priority") == "important" && state.at("hasLease") == false;
+    }, "overlapping highlights restore pre-highlight style");
     call("element_highlight", {{"selector", "#person"}, {"duration", 120}});
     eval("document.querySelector('#person').style.outline='5px dashed "
-         "orange';true");
-    call("page_wait", {{"ms", 150}});
-    check(eval("document.querySelector('#person').style.outlineWidth") == "5px",
-          "highlight cleanup respects later page edits");
-    check(eval("Object.getOwnPropertySymbols(document.querySelector('#person'))"
-               ".filter(s=>Symbol.keyFor(s)==='ChromeRelay.outlineLease')."
-               "length") == 0,
-          "highlight lease removed after restoration");
+         "orange';ownedHighlightTimers.at(-1).fire();true");
+    highlight_check([](const Json &state) {
+      return state.at("width") == "5px" && state.at("style") == "dashed" &&
+             state.at("color") == "orange";
+    }, "highlight cleanup respects later page edits");
+    highlight_check([](const Json &state) {
+      return state.at("hasLease") == false;
+    }, "highlight lease removed after restoration");
     call("element_highlight", {{"selector", "#person"}, {"duration", 120}});
-    eval("document.querySelector('#person').style.outlineColor='lime';true");
-    call("page_wait", {{"ms", 150}});
-    check(
-        eval("document.querySelector('#person').style.outlineWidth==='5px'&&"
-             "document.querySelector('#person').style.outlineStyle==='dashed'&&"
-             "document.querySelector('#person').style.outlineColor==='lime'") ==
-            true,
-        "highlight restores untouched properties while preserving one "
-        "page-edited property");
+    eval("document.querySelector('#person').style.outlineColor='lime';"
+         "ownedHighlightTimers.at(-1).fire();true");
+    highlight_check([](const Json &state) {
+      return state.at("width") == "5px" && state.at("style") == "dashed" &&
+             state.at("color") == "lime" && state.at("hasLease") == false;
+    }, "highlight restores untouched properties while preserving one page-edited property");
+    eval("window.setTimeout=ownedSetTimeout;window.clearTimeout=ownedClearTimeout;"
+         "delete window.ownedSetTimeout;delete window.ownedClearTimeout;true");
     rejects(
         [&] {
           call("element_highlight",

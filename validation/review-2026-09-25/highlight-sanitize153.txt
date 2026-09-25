@@ -1,0 +1,5 @@
+Page-services synchronization follow-up: sanitize153
+Chrome 153.0.8010.54
+55 page services checks passed; 0 failed
+stderr: empty
+Owned temporary profile removed; HTTP fixture stopped.

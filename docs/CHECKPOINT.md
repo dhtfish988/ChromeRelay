@@ -41,6 +41,18 @@ insufficient when its standard library/SDK lacks these facilities. The local
 positive and deliberately unavailable-header negative probes behaved as
 expected; the older hosted Xcode failure is recorded in the validation history.
 
+A later hosted run failed the service test's fixed-sleep highlight assertion.
+Its log lacked the actual style/lease state, so the specific scheduling cause
+is unresolved. A controlled browser-clock probe on Chrome 152 and 153 confirmed
+that a 180 ms client wait does not establish execution of a 150 ms browser
+callback. The test now waits for actual lease completion, retains exact original
+style/priority checks, and separately invokes real cleanup callbacks in a known
+order to verify overlap and page-edit behavior. This follow-up changes tests
+and documentation only. The full 1,533-check local matrices above precede it;
+the updated 55-check service test was additionally run in Release on both
+Chrome versions and in Debug/ASan/UBSan on Chrome 153. These focused runs do not
+represent a repeat of the full local matrix.
+
 The published [validation summary](../validation/README.md) records this review.
 The sections below preserve the **2026-09-23 delivery** evidence and counts;
 its finite fuzz and selected thread checks are historical, not fresh follow-up

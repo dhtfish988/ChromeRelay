@@ -93,6 +93,14 @@ share the original values; a later page edit to a property is preserved. The
 temporary element symbol/timer is removed when the highlight expires. It does
 not install a page-global property.
 
+The duration schedules a browser timer; delayed renderer scheduling can postpone
+its callback beyond that many milliseconds on the client clock. The service
+test observes actual lease completion before asserting the original outline and
+priority. Separate controlled-callback cases execute the real cleanup closures
+in a known order, including an already-cancelled older callback, and verify
+overlap ownership and preservation of full or partial page edits. A failed
+assertion records the inline style, priority, lease, visibility and browser clock.
+
 `page_snapshot` reads the selected document with `Accessibility.getFullAXTree`.
 It returns a structured `tree` and a readable YAML mapping in `snapshot`, with
 `format: "ax-yaml"`. Roles, computed names, values, descriptions and primitive

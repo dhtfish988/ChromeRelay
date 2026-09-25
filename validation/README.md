@@ -55,3 +55,12 @@ an explicit default-context mapping fix; independent probes on both versions
 also exposed asynchronous directory completion. The final full transcripts above
 include both fixes. A transient local CLI startup timeout and successful unchanged
 follow-up checks are recorded in the machine-readable result.
+
+A later hosted run failed the highlight-restoration assertion after a fixed client
+sleep. The final follow-up changes only service-test synchronization and related
+documentation: it awaits real lease completion and checks overlap cleanup with
+controlled callback ordering. The revised 55 service checks passed in Release
+with Chrome 152 and 153, and Debug/ASan with Chrome 153. The full local matrices
+above precede this test-only follow-up; their production code is unchanged.
+The original hosted scheduling cause remains unproven. Focused transcripts and
+the diagnostic scope are recorded in `current-review.json`.

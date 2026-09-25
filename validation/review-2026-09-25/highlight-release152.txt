@@ -1,0 +1,5 @@
+Page-services synchronization follow-up: release152
+Chrome 152.0.7977.82
+55 page services checks passed; 0 failed
+stderr: empty
+Owned temporary profile removed; HTTP fixture stopped.

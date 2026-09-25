@@ -1,5 +1,5 @@
 {
-  "recorded_utc": "2026-09-25T02:57:26.740943+00:00",
+  "recorded_utc": "2026-09-25T03:13:39.432466+00:00",
   "reviewed_base_commit": "284b7f1adcee1925e19ac6b0cb9f18782723488a",
   "profiles": {
     "debug": {
@@ -121,10 +121,10 @@
     "CMakeLists.txt": "4b935865da9545e0076af06674ae1eb5cf40ad658daaece6e0651b3249b6ddbe",
     "README.md": "fb46cdc92a79631ae4f7007507dc86658c872aefb68ec707871497b06a20a339",
     "docs/CANCELLATION.md": "ac6349619b9ee4229ab9cd256f9e964554c80d11ccdd442efad8223d2a94533e",
-    "docs/CHECKPOINT.md": "27b18e5a874b2ea78dad093bc2a7daa8f4b58d928e779ac71ed06019992fc787",
+    "docs/CHECKPOINT.md": "3dacb4b8a8b86924b82bdc05bc6e266f47b2f6ad0feb2f9457f1682eecdea598",
     "docs/FILES_AND_CAPTURE.md": "7259f21456493ae713226ce7373b98841d2df5c5df2cc69f74d03473a0333e72",
     "docs/FRAMES.md": "585f80496c03b3bb538dba34f9cb00a6fcf2d355f800d31a295f16d9d41487cb",
-    "docs/PAGE_SERVICES.md": "43bd88ed9195718776da8046a00af8a87fa8c07ce6800a60798da39e22edf718",
+    "docs/PAGE_SERVICES.md": "764ac2d0295ac3d43adf81ccd7f2bb5661fe95ed0c253a0a78728cb464a89069",
     "include/chromerelay/browser.hpp": "11978810052cd5f3978b7e35fe4c990e100ea17bef38d24b9d11cca72affbe20",
     "include/chromerelay/dom.hpp": "cf699d6b6a1fffa0596dabe8df1998f6fe86971255f801fa7717111caacd1c3c",
     "src/actions/dom_actions.cpp": "8ac044e17c9307e17ca195ddd6e0ba5b245a26677ab77f2d00e29b2fce70f723",
@@ -135,7 +135,8 @@
     "tests/integration/cookie_context_live.cpp": "02094497ad3a5270ea7f7c50839fa000ac9777980021ad27da9d49d40a6f9a51",
     "tests/integration/files_live.cpp": "9b9ae530a746c144d7912ddfd89fb1b1141b1a98c1d8b3dd7d136e1bf7effcc7",
     "tests/integration/run_suite.py": "428d0ac45acdc43b46c04bdc83e24047bfefa130a3264843d633ebd18580f731",
-    "tests/integration/target_affinity_live.cpp": "851dd9a5f4e76df650b7bb37b9afd9390a90fb8ebefe160269142991ee3547f7"
+    "tests/integration/target_affinity_live.cpp": "851dd9a5f4e76df650b7bb37b9afd9390a90fb8ebefe160269142991ee3547f7",
+    "tests/integration/services_live.cpp": "f331224b200db4f603385601acd3116aa7bd734fdfbb4d1ea5157f766c592f96"
   },
   "limits": [
     "macOS arm64 and owned Chrome only",
@@ -160,5 +161,50 @@
   "hosted_ci_url": "https://github.com/dhtfish988/ChromeRelay/actions/workflows/verify.yml",
   "hosted_ci_note": "Check the Actions result for the exact Git commit; local results do not imply a hosted run passed.",
   "new_checks": 46,
-  "local_launch_observation": "The first installed CLI check timed out at --version during concurrent validation. Two separate version calls immediately completed in 0.009 seconds each, and the unchanged full CLI suite then passed 17 checks. The transient delay was not attributed to a proven cause; no timeout was increased."
+  "local_launch_observation": "The first installed CLI check timed out at --version during concurrent validation. Two separate version calls immediately completed in 0.009 seconds each, and the unchanged full CLI suite then passed 17 checks. The transient delay was not attributed to a proven cause; no timeout was increased.",
+  "test_synchronization_followup": {
+    "production_commit": "8075d5859012ebcd93a9f94bde0dc814eff2d6ee",
+    "scope": "Only the page-services test synchronization and documentation changed after the full 1,533-check local matrices above. Production code is unchanged. The revised 55-check service program was then rebuilt and rerun in the four cases below; the full local matrices were not repeated.",
+    "failed_hosted_run": "https://github.com/dhtfish988/ChromeRelay/actions/runs/36088384775",
+    "diagnostic": "A controlled virtual-time pause reproduced an outstanding highlight timer after 181 ms on the client clock in Chrome 152 and 153; advancing renderer time restored the original outline and important priority. This demonstrates why a client sleep is not callback completion; the original hosted failure did not record sufficient state to establish its exact scheduling cause.",
+    "change": "Observe real lease expiry with a bounded wait and preserve strict outline and priority checks. Separately invoke captured production cleanup callbacks in deterministic order to check stale-callback ownership and page edits; report styles, lease, visibility and browser clock on failure.",
+    "checks": [
+      {
+        "profile": "release152",
+        "chrome": "152.0.7977.82",
+        "passed": 55,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/highlight-release152.txt",
+        "sha256": "62c9643032879f36ce81fa698fd9bbca1a43a43681cccc9cc428c3d8a750839d"
+      },
+      {
+        "profile": "release153",
+        "chrome": "153.0.8010.54",
+        "passed": 55,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/highlight-release153.txt",
+        "sha256": "3e9132866b52ae0ee728db31e7d7f0e371720ea8113304ffe1b4e37980c1a0d4"
+      },
+      {
+        "profile": "debug153",
+        "chrome": "153.0.8010.54",
+        "passed": 55,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/highlight-debug153.txt",
+        "sha256": "9370b7e9170033f1ab026ef2789becb7868462749ff429d437752ecf29c66235"
+      },
+      {
+        "profile": "sanitize153",
+        "chrome": "153.0.8010.54",
+        "passed": 55,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/highlight-sanitize153.txt",
+        "sha256": "cc16c02bfbffbdb8fc195698872d8bc28f1c8eb77b63ef59c6cb12d399070f82"
+      }
+    ]
+  }
 }
