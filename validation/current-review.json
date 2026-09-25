@@ -1,5 +1,5 @@
 {
-  "recorded_utc": "2026-09-25T03:13:39.432466+00:00",
+  "recorded_utc": "2026-09-25T03:26:16.525602+00:00",
   "reviewed_base_commit": "284b7f1adcee1925e19ac6b0cb9f18782723488a",
   "profiles": {
     "debug": {
@@ -121,7 +121,7 @@
     "CMakeLists.txt": "4b935865da9545e0076af06674ae1eb5cf40ad658daaece6e0651b3249b6ddbe",
     "README.md": "fb46cdc92a79631ae4f7007507dc86658c872aefb68ec707871497b06a20a339",
     "docs/CANCELLATION.md": "ac6349619b9ee4229ab9cd256f9e964554c80d11ccdd442efad8223d2a94533e",
-    "docs/CHECKPOINT.md": "3dacb4b8a8b86924b82bdc05bc6e266f47b2f6ad0feb2f9457f1682eecdea598",
+    "docs/CHECKPOINT.md": "edc2880b2a294c4488f93fabd40128867fcbe07c22827ddadf0d88e95195007d",
     "docs/FILES_AND_CAPTURE.md": "7259f21456493ae713226ce7373b98841d2df5c5df2cc69f74d03473a0333e72",
     "docs/FRAMES.md": "585f80496c03b3bb538dba34f9cb00a6fcf2d355f800d31a295f16d9d41487cb",
     "docs/PAGE_SERVICES.md": "764ac2d0295ac3d43adf81ccd7f2bb5661fe95ed0c253a0a78728cb464a89069",
@@ -133,10 +133,13 @@
     "src/browser/input_observer.cpp": "f2fc6893d1c6e1445efab89e2e4df39e925f16f6c78fa73e8de81725394c23b3",
     "src/browser/page_services.cpp": "4039accae455c62c1ac0b6ac97e7faeace2dec396384879514d71d0d6e3b9c60",
     "tests/integration/cookie_context_live.cpp": "02094497ad3a5270ea7f7c50839fa000ac9777980021ad27da9d49d40a6f9a51",
-    "tests/integration/files_live.cpp": "9b9ae530a746c144d7912ddfd89fb1b1141b1a98c1d8b3dd7d136e1bf7effcc7",
+    "tests/integration/files_live.cpp": "3b1dd6f1a22ba363dbafbbdf81b4de22944c55429a8e3c0fe1215074f7deb73e",
     "tests/integration/run_suite.py": "428d0ac45acdc43b46c04bdc83e24047bfefa130a3264843d633ebd18580f731",
     "tests/integration/target_affinity_live.cpp": "851dd9a5f4e76df650b7bb37b9afd9390a90fb8ebefe160269142991ee3547f7",
-    "tests/integration/services_live.cpp": "f331224b200db4f603385601acd3116aa7bd734fdfbb4d1ea5157f766c592f96"
+    "tests/integration/services_live.cpp": "f331224b200db4f603385601acd3116aa7bd734fdfbb4d1ea5157f766c592f96",
+    "tests/integration/click_live.cpp": "0bfdf7dc128d466b757794ab1507d93f0d3cdecae6d480e3815450b5bbcfa2ee",
+    "tests/integration/workflow_live.cpp": "3699555a410b3411c90b80246d01728546c877bf75cbeaf5d76f963bf850ea61",
+    "docs/CLICKS.md": "eb9fff87612bc8d2f6bd5c414db6a7d6e777a4863f587b8fd92d2ad2d25226dc"
   },
   "limits": [
     "macOS arm64 and owned Chrome only",
@@ -204,6 +207,77 @@
         "owned_cleanup": true,
         "transcript": "review-2026-09-25/highlight-sanitize153.txt",
         "sha256": "cc16c02bfbffbdb8fc195698872d8bc28f1c8eb77b63ef59c6cb12d399070f82"
+      }
+    ]
+  },
+  "full_local_matrix_production_commit": "8075d5859012ebcd93a9f94bde0dc814eff2d6ee",
+  "deadline_test_followup": {
+    "scope": "Test-only follow-up after c997356; production code remains identical to the complete local matrix at 8075d5859012. No full local matrix rerun for these test changes.",
+    "failed_hosted_run": "https://github.com/dhtfish988/ChromeRelay/actions/runs/36089509980",
+    "cloud_limit": "The failed click assertion did not record actual input counts or the exception; the exact cloud cause remains unresolved.",
+    "controlled_probe": "On Chrome 152 and 153, a 600 ms animation-frame preparation delay made the old 400 ms action expire before any input. The normal allowance reaches one trusted press/release and the expected missing-acknowledgement error. This establishes an ambiguous test precondition, not the original cloud scheduling cause.",
+    "changes": {
+      "click": "Use ordinary preparation allowance, require exact post-press acknowledgement error or long-hold deadline error, and retain exact press/release and cleanup assertions with diagnostic state.",
+      "files": "Give post-selection cases 3000 ms including preparation; retain exact acknowledgement-deadline message, one trusted selection, final count/removal and no-replay/cleanup assertions.",
+      "workflow": "Allow 2000 ms for the first script and request a 5000 ms retry delay, which is rejected before sleeping; retain timed_out, attempts == 1 and deadlineSeen == 1."
+    },
+    "new_checks": 0,
+    "checks": [
+      {
+        "profile": "release152",
+        "chrome": "152.0.7977.82",
+        "programs": {
+          "relay-click-tests": 118,
+          "relay-files-tests": 59,
+          "relay-workflow-tests": 41
+        },
+        "total": 218,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/deadline-release152.txt",
+        "sha256": "8f3a69400ccccc86c0a28270a9339036c393a923b0779a6f8f5bf360306236fc"
+      },
+      {
+        "profile": "release153",
+        "chrome": "153.0.8010.54",
+        "programs": {
+          "relay-click-tests": 118,
+          "relay-files-tests": 59,
+          "relay-workflow-tests": 41
+        },
+        "total": 218,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/deadline-release153.txt",
+        "sha256": "5eae17e87f52203e9b014bda1946f6d73cd1521bfe65cb4c933205ed9d62d710"
+      },
+      {
+        "profile": "debug153",
+        "chrome": "153.0.8010.54",
+        "programs": {
+          "relay-click-tests": 118,
+          "relay-files-tests": 59,
+          "relay-workflow-tests": 41
+        },
+        "total": 218,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/deadline-debug153.txt",
+        "sha256": "7bab0dfd90d79de19883713c37aa21ff6ebbd7e89e8dcc44da0a7a5e83868c7f"
+      },
+      {
+        "profile": "sanitize153",
+        "chrome": "153.0.8010.54",
+        "programs": {
+          "relay-click-tests": 118,
+          "relay-files-tests": 59,
+          "relay-workflow-tests": 41
+        },
+        "total": 218,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/deadline-sanitize153.txt",
+        "sha256": "8c7f6bcf305ec4541e108ca5eea959e92d0cbcd7febc030363bae141d2888a4d"
       }
     ]
   }

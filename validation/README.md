@@ -64,3 +64,12 @@ with Chrome 152 and 153, and Debug/ASan with Chrome 153. The full local matrices
 above precede this test-only follow-up; their production code is unchanged.
 The original hosted scheduling cause remains unproven. Focused transcripts and
 the diagnostic scope are recorded in `current-review.json`.
+
+A subsequent click-test failure prompted a second test-only timing review.
+The revised click, file and workflow programs retain all 118, 59 and 41 checks,
+respectively. Each passed Release with Chrome 152/153 and Debug/ASan with Chrome
+153. They give prerequisite browser operations time to complete, then assert
+the intended failure phase and exact side effects. No production retries or
+assertion relaxations were added. The controlled click probe demonstrates an
+ambiguous test precondition; the original cloud event count was not recorded.
+The machine-readable record links the focused transcripts and failed run.

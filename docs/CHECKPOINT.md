@@ -53,6 +53,18 @@ the updated 55-check service test was additionally run in Release on both
 Chrome versions and in Debug/ASan/UBSan on Chrome 153. These focused runs do not
 represent a repeat of the full local matrix.
 
+A subsequent hosted click-test failure also lacked the actual event count.
+A controlled 600 ms preparation delay made its old 400 ms action expire before
+the first press in both Chrome versions. The click test now allows normal
+preparation time and requires the specific post-press error, exact input count,
+button release and receipt cleanup. The same review corrected two upload
+post-selection cases and a workflow first-attempt case whose total deadlines
+could expire before the effect they required. Their strict effect and no-replay
+assertions remain. Revised click (118), file (59) and workflow (41) programs each
+passed Release on Chrome 152/153 and Debug/ASan/UBSan on Chrome 153. These are
+test-only follow-ups; the original hosted click failure's exact cause remains
+unproven, and the full local 1,533-check matrices were not rerun for test changes.
+
 The published [validation summary](../validation/README.md) records this review.
 The sections below preserve the **2026-09-23 delivery** evidence and counts;
 its finite fuzz and selected thread checks are historical, not fresh follow-up

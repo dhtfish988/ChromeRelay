@@ -42,7 +42,8 @@ menus and scrolling. `css-list-values.json` contains 16 observed selection
 vectors, including escaped punctuation, nested CSS functions, visibility,
 document/shadow order and mixed input indices.
 
-`relay-click-tests` passed 118 checks in Debug, ASan/UBSan and ThreadSanitizer.
+The original delivery's `relay-click-tests` passed 118 checks in Debug,
+ASan/UBSan and ThreadSanitizer.
 It adds moving/replaced/animated targets, native AX role reacquisition, new
 overlays/disabled controls, no replay after press, long-press deadline cleanup,
 shadow overlays, moving cross-process frame owners and independent tab closure.
@@ -60,3 +61,21 @@ random human pointer path. That assertion was corrected to compare hover effects
 only for explicit `hover_first` vectors. Trusted click event sequences remain
 compared for every vector. The long-press failure test allows enough time for
 the first press under instrumented builds, then checks its bounded release.
+
+In the 2026-09-25 follow-up, a hosted run failed the post-press replacement
+assertion without recording its actual event counts. A controlled probe on
+Chrome 152 and 153 delayed the preparatory animation-frame callback and showed
+that the old 400 ms total allowance could expire before any press. That is a
+test precondition failure; the specific hosted cause remains unconfirmed.
+
+The replacement test now uses the ordinary click allowance and requires both
+the specific missing-acknowledgement error and exactly one press. The long-press
+test likewise uses the ordinary allowance, requests a hold longer than that
+allowance, and requires the specific delay-deadline error plus exactly one
+press/release pair. Neither action is retried. Button cleanup and the replacement
+case's receipt-binding cleanup remain required. Failure diagnostics include
+error type/code/message, elapsed time, actual events, visibility, browser clock
+and pointer state. The short pre-press refusal cases remain separate. Production
+click behavior is unchanged. The updated 118 checks passed in Release on Chrome
+152.0.7977.82 and 153.0.8010.54, and in Debug and ASan/UBSan on Chrome 153.0.8010.54;
+these are focused runs, not a repeat of the full matrix or ThreadSanitizer run.

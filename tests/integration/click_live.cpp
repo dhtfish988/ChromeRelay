@@ -167,23 +167,55 @@ int main(int argc, char **argv) {
     check(eval("events.length===0") == true,
           "disabled-after-hover target receives no native press");
 
+    // These scenarios require the first press to happen. Use the ordinary
+    // click allowance for preparation, then verify the exact failure stage;
+    // an arbitrary short total timeout can otherwise fail before any input.
+    auto failed_click = [&](Json args) {
+      Json observed = {{"arguments", args}, {"error", nullptr}};
+      const auto started = std::chrono::steady_clock::now();
+      try {
+        call("element_click", args);
+      } catch (const ProtocolFailure &error) {
+        observed["error"] = {{"type", "ProtocolFailure"},
+                             {"code", error.code}, {"message", error.what()}};
+      } catch (const DeadlineExceeded &error) {
+        observed["error"] = {{"type", "DeadlineExceeded"},
+                             {"message", error.what()}};
+      } catch (const RelayError &error) {
+        observed["error"] = {{"type", "RelayError"},
+                             {"message", error.what()}};
+      }
+      observed["elapsed_ms"] = std::chrono::duration_cast<Milliseconds>(
+          std::chrono::steady_clock::now() - started).count();
+      observed["state"] = eval(R"JS(({
+        downCount:globalThis.downCount??null,events,
+        presses:events.filter(e=>e.kind==='mousedown').length,
+        releases:events.filter(e=>e.kind==='mouseup').length,
+        visibility:document.visibilityState,now:performance.now(),
+        receipts:Object.keys(globalThis).filter(k=>k.startsWith('__chromerelay_receipt_'))
+      }))JS");
+      observed["pointer"] = runtime.browser().pointer_position();
+      return observed;
+    };
     fresh();
     eval("window.downCount=0;const "
          "b=document.querySelector('#first');b.onmousedown=()=>{downCount++;b."
          "replaceWith(b.cloneNode(true))};true");
-    rejects(
-        [&] {
-          call("element_click", {{"selector", "#first"}, {"timeout", 400}});
-        },
-        "post-press replacement cannot acknowledge original click");
-    check(eval("downCount===1&&events.filter(e=>e.kind==='mousedown').length==="
-               "1") == true,
-          "failure after the first press never reacquires or replays input");
-    check(runtime.browser().pointer_position().at("buttons") == 0,
-          "post-press failure releases its button");
-    check(eval("Object.keys(globalThis).filter(k=>k.startsWith('__chromerelay_"
-               "receipt_')).length") == 0,
-          "failed click removes input receipt bindings");
+    const auto replacement = failed_click({{"selector", "#first"}});
+    const auto replacement_detail = " actual=" + replacement.dump();
+    check(replacement.at("error") == Json({
+              {"type", "RelayError"},
+              {"message", "Target did not acknowledge the input event before the action deadline"}}),
+          "post-press replacement cannot acknowledge original click" +
+              replacement_detail);
+    check(replacement.at("state").at("downCount") == 1 &&
+              replacement.at("state").at("presses") == 1,
+          "failure after the first press never reacquires or replays input" +
+              replacement_detail);
+    check(replacement.at("pointer").at("buttons") == 0,
+          "post-press failure releases its button" + replacement_detail);
+    check(replacement.at("state").at("receipts").empty(),
+          "failed click removes input receipt bindings" + replacement_detail);
     for (const auto &kind : {"double", "triple"}) {
       fresh();
       eval("const "
@@ -200,19 +232,20 @@ int main(int argc, char **argv) {
             "later click ordinals cannot press a replacement target");
     }
     fresh();
-    rejects(
-        [&] {
-          call("element_click", {{"selector", "#first"},
-                                 {"type", "long"},
-                                 {"duration", 2000},
-                                 {"timeout", 800}});
-        },
-        "long press cannot exceed its action allowance");
-    check(eval("events.filter(e=>e.kind==='mousedown').length===1&&events."
-               "filter(e=>e.kind==='mouseup').length===1") == true,
-          "long-press deadline releases the single attempted press");
-    check(runtime.browser().pointer_position().at("buttons") == 0,
-          "long-press failure leaves no held button");
+    // The requested hold exceeds the ordinary action allowance. After the
+    // first press, ActionClock must reject the delay and release that press.
+    const auto long_press = failed_click(
+        {{"selector", "#first"}, {"type", "long"}, {"duration", 10000}});
+    const auto long_detail = " actual=" + long_press.dump();
+    check(long_press.at("error") == Json({
+              {"type", "DeadlineExceeded"},
+              {"message", "Requested delay exceeds the remaining action deadline"}}),
+          "long press cannot exceed its action allowance" + long_detail);
+    check(long_press.at("state").at("presses") == 1 &&
+              long_press.at("state").at("releases") == 1,
+          "long-press deadline releases the single attempted press" + long_detail);
+    check(long_press.at("pointer").at("buttons") == 0,
+          "long-press failure leaves no held button" + long_detail);
 
     fresh();
     eval("const "

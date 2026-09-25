@@ -8,7 +8,7 @@ using namespace chromerelay;
 namespace fs = std::filesystem;
 unsigned passed = 0, failed = 0;
 std::string step;
-void check(bool condition, const char *name) {
+void check(bool condition, const std::string &name) {
   if (condition)
     ++passed;
   else {
@@ -16,12 +16,14 @@ void check(bool condition, const char *name) {
     std::cerr << "FAIL: " << name << '\n';
   }
 }
-template <class F> void rejects(F action, const char *name) {
+template <class F> std::string rejects(F action, const char *name) {
   try {
     action();
     check(false, name);
-  } catch (const std::exception &) {
+    return "action unexpectedly succeeded";
+  } catch (const std::exception &error) {
     check(true, name);
+    return error.what();
   }
 }
 void write(const fs::path &path, const std::string &value) {
@@ -252,17 +254,34 @@ int main(int argc, char **argv) {
          "for(const kind of "
          "['change','cancel'])window.addEventListener(kind,blockFileReceipt,"
          "true);true");
-    call("browser_configure", {{"long_timeout", 300}});
-    rejects(
+    // This deadline covers filesystem validation, lookup and asynchronous
+    // enumeration as well as the intentionally missing acknowledgement.
+    // Give a shared CI worker time to reach the post-selection failure stage.
+    call("browser_configure", {{"long_timeout", 3000}});
+    const auto receipt_started = std::chrono::steady_clock::now();
+    const auto receipt_failure = rejects(
         [&] {
           call("form_upload",
                {{"selector", "#directory"}, {"files", folder_a.string()}});
         },
         "missing native selection receipt reaches its existing deadline");
+    const auto receipt_elapsed =
+        std::chrono::duration_cast<Milliseconds>(
+            std::chrono::steady_clock::now() - receipt_started)
+            .count();
     call("browser_configure", {{"long_timeout", 30000}});
-    check(eval("blockedSelection.length===1&&document.querySelector('#"
-               "directory').files.length===96") == true,
-          "deadline failure leaves one completed selection without replay");
+    auto receipt_state =
+        eval("({events:blockedSelection.slice(),count:document.querySelector('#"
+             "directory')?.files.length??null})");
+    receipt_state["error"] = receipt_failure;
+    receipt_state["elapsed_ms"] = receipt_elapsed;
+    check(receipt_failure == "Target did not acknowledge the input event "
+                             "before the action deadline" &&
+              receipt_state.at("events").size() == 1 &&
+              receipt_state.at("count") == 96,
+          "deadline failure must follow exactly one completed selection "
+          "without replay; state=" +
+              receipt_state.dump());
     check(eval("Object.getOwnPropertyNames(window).filter(k=>k.startsWith('__"
                "chromerelay_receipt_')).length") == 0,
           "timed-out upload removes its receipt binding");
@@ -333,17 +352,27 @@ int main(int argc, char **argv) {
          "=='directory'&&e.isTrusted){detachedSelection++;e.target.remove();e."
          "stopImmediatePropagation()}};"
          "window.addEventListener('change',removeFileInput,true);true");
-    call("browser_configure", {{"long_timeout", 300}});
-    rejects(
+    call("browser_configure", {{"long_timeout", 3000}});
+    const auto detached_started = std::chrono::steady_clock::now();
+    const auto detached_failure = rejects(
         [&] {
           call("form_upload",
                {{"selector", "#directory"}, {"files", folder_b.string()}});
         },
         "detached selection target fails instead of being reacquired");
+    const auto detached_elapsed =
+        std::chrono::duration_cast<Milliseconds>(
+            std::chrono::steady_clock::now() - detached_started)
+            .count();
     call("browser_configure", {{"long_timeout", 30000}});
-    check(eval("detachedSelection===1&&document.querySelector('#directory')==="
-               "null") == true,
-          "target detachment never repeats or recreates the input");
+    auto detached_state = eval("({events:detachedSelection,removed:document."
+                               "querySelector('#directory')===null})");
+    detached_state["error"] = detached_failure;
+    detached_state["elapsed_ms"] = detached_elapsed;
+    check(detached_state.at("events") == 1 &&
+              detached_state.at("removed") == true,
+          "target detachment must occur once without input recreation; state=" +
+              detached_state.dump());
     eval("window.removeEventListener('change',removeFileInput,true);true");
     call("page_navigate", {{"url", std::string(site) + "/capture.html"}});
     runtime.browser().page_call("Emulation.setDeviceMetricsOverride",

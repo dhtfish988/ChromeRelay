@@ -132,13 +132,16 @@ int main(int argc, char **argv) {
             "success_check matches JS truthiness of actual JSON result");
     }
     eval("window.deadlineSeen=0;true");
+    // Allow the first browser round trip on shared runners. The requested
+    // retry delay still exceeds the entire budget, so no second execution is
+    // allowed; the workflow rejects that delay without sleeping for it.
     retry =
         call("workflow_retry", {{"tool", "page_evaluate"},
                                 {"args", {{"script", "++deadlineSeen;false"}}},
                                 {"success_check", "result"},
                                 {"max_retries", 10},
-                                {"delay_ms", 200},
-                                {"timeout", 80}});
+                                {"delay_ms", 5000},
+                                {"timeout", 2000}});
     check(retry.at("timed_out") == true && retry.at("attempts") == 1 &&
               eval("deadlineSeen") == 1,
           "overall retry deadline prevents delayed second execution");
