@@ -380,6 +380,18 @@ int main(int argc, char **argv) {
                                  {"height", 600},
                                  {"deviceScaleFactor", 1},
                                  {"mobile", false}});
+    auto capture_state = [&] {
+      return Json{
+          {"layout", runtime.browser().page_call("Page.getLayoutMetrics")},
+          {"page", eval("({innerWidth,innerHeight,devicePixelRatio,"
+                        "clientWidth:document.documentElement.clientWidth,"
+                        "scrollWidth:document.documentElement.scrollWidth,"
+                        "scrollbarWidth:getComputedStyle(document."
+                        "documentElement).scrollbarWidth,visualViewport:"
+                        "{width:visualViewport.width,height:visualViewport."
+                        "height,scale:visualViewport.scale}})")}};
+    };
+    write(evidence / "capture-initial-layout.json", capture_state().dump(2));
     auto save = [&](const std::string &name, const Json &result) {
       if (result.contains("screenshot")) {
         auto image = decode_png(result.at("screenshot"));
@@ -389,18 +401,21 @@ int main(int argc, char **argv) {
       }
       auto metadata = result;
       metadata.erase("screenshot");
+      metadata["captureStateAfter"] = capture_state();
       write(evidence / (name + ".json"), metadata.dump(2));
     };
     const auto viewport = call("page_capture");
     save("viewport.png", viewport);
     check(viewport.at("width") == 800 && viewport.at("height") == 600,
-          "viewport PNG has expected pixel dimensions");
+          "viewport PNG has expected pixel dimensions; actual=" +
+              viewport.at("width").dump() + "x" + viewport.at("height").dump());
     check(viewport.at("screenshot").get<std::string>().size() > 1000,
           "inline screenshot contains complete Base64 rather than a preview");
     const auto full = call("page_capture", {{"fullPage", true}});
     save("full.png", full);
     check(full.at("width") == 800 && full.at("height") == 1600,
-          "full-page PNG includes entire document height");
+          "full-page PNG includes entire document height; actual=" +
+              full.at("width").dump() + "x" + full.at("height").dump());
     const auto element = call("page_capture", {{"selector", "#swatch"}});
     save("element.png", element);
     check(element.at("width") == 200 && element.at("height") == 120,
@@ -459,6 +474,7 @@ int main(int argc, char **argv) {
                                  {"deviceScaleFactor", 2},
                                  {"mobile", false}});
     eval("scrollTo(0,0);true");
+    write(evidence / "capture-retina-layout.json", capture_state().dump(2));
     const auto retina = call("page_capture");
     save("retina.png", retina);
     check(retina.at("width") == 1600 && retina.at("height") == 1200,

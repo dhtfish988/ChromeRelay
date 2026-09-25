@@ -65,6 +65,16 @@ passed Release on Chrome 152/153 and Debug/ASan/UBSan on Chrome 153. These are
 test-only follow-ups; the original hosted click failure's exact cause remains
 unproven, and the full local 1,533-check matrices were not rerun for test changes.
 
+The next hosted run passed those cases and reached a capture-fixture mismatch:
+viewport/full-page PNGs were 785 pixels wide rather than the expected 800.
+Controlled scrollbar and device-scale probes on Chrome 152/153 reproduced that
+width as a valid CSS content area with a 15-pixel scrollbar. The original hosted
+run did not save layout metrics. The owned capture fixture now explicitly hides
+scrollbars while preserving scrolling; production capture behavior and all exact
+pixel assertions remain unchanged. The test records layout/DPR diagnostics.
+File, independent PNG and MCP-file checks (59 + 24 + 23) then passed Release on
+both Chrome versions and Debug/ASan/UBSan on Chrome 153.
+
 The published [validation summary](../validation/README.md) records this review.
 The sections below preserve the **2026-09-23 delivery** evidence and counts;
 its finite fuzz and selected thread checks are historical, not fresh follow-up

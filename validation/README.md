@@ -73,3 +73,10 @@ the intended failure phase and exact side effects. No production retries or
 assertion relaxations were added. The controlled click probe demonstrates an
 ambiguous test precondition; the original cloud event count was not recorded.
 The machine-readable record links the focused transcripts and failed run.
+
+The final capture-fixture follow-up makes scrollbar styling explicit while
+preserving scrolling and exact image-size/pixel assertions. Controlled probes
+explain how a valid 15-pixel scrollbar can make the CSS content area 785 pixels
+wide in an 800-pixel emulated window. The original cloud layout was not recorded.
+Production capture code is unchanged. Four focused runs each passed 106 file,
+PNG and MCP-file checks; their transcripts and scope are also recorded above.

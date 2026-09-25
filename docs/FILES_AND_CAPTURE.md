@@ -87,6 +87,7 @@ When a selector is supplied, that element is revealed in the selected document
 and its bounds are projected through frame owners to the root page. Transformed
 elements/frames produce an axis-aligned crop, including surrounding pixels in the
 corners of a rotated box. Device scale is reflected in the PNG's physical size.
+Viewport bounds use the browser's CSS content area, excluding any scrollbar.
 
 Without `path`, `screenshot` contains the **complete** Base64 PNG. With a path,
 `saved` contains the canonical committed destination. Both forms return byte
@@ -114,6 +115,9 @@ deadline/cancellation cleanup without duplicate selection. Target detachment
 does not recreate or reselect the input. `verify_pngs.py` decodes eight captures and checks known pixels,
 including full-page, scrolled viewport, offscreen element, scale 2 and a rotated
 OOP frame crop.
+The owned capture fixture hides scrollbars with CSS while preserving scrolling,
+so exact pixel expectations do not depend on the host's scrollbar preference.
+The test evidence records layout, viewport and device-scale diagnostics.
 
 `mcp_files.py` drives separate actual native processes using both supported MCP
 versions and canonical/legacy names. Deterministic noisy canvas captures exceed

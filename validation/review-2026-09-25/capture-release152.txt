@@ -1,0 +1,9 @@
+Capture fixture follow-up: release152
+Chrome 152.0.7977.82
+relay-files-tests: 59 live file/capture checks passed; 0 failed
+stderr: empty
+verify_pngs.py: {"checks": 24, "passed": true, "decoder": "Pillow", "images": 8}
+stderr: empty
+mcp_files.py: {"checks": 23, "passed": true, "transport": "actual native MCP processes", "decoder": "Pillow"}
+stderr: empty
+Owned temporary profile removed; HTTP fixture stopped.

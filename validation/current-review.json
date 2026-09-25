@@ -1,5 +1,5 @@
 {
-  "recorded_utc": "2026-09-25T03:26:16.525602+00:00",
+  "recorded_utc": "2026-09-25T03:38:34.032405+00:00",
   "reviewed_base_commit": "284b7f1adcee1925e19ac6b0cb9f18782723488a",
   "profiles": {
     "debug": {
@@ -121,8 +121,8 @@
     "CMakeLists.txt": "4b935865da9545e0076af06674ae1eb5cf40ad658daaece6e0651b3249b6ddbe",
     "README.md": "fb46cdc92a79631ae4f7007507dc86658c872aefb68ec707871497b06a20a339",
     "docs/CANCELLATION.md": "ac6349619b9ee4229ab9cd256f9e964554c80d11ccdd442efad8223d2a94533e",
-    "docs/CHECKPOINT.md": "edc2880b2a294c4488f93fabd40128867fcbe07c22827ddadf0d88e95195007d",
-    "docs/FILES_AND_CAPTURE.md": "7259f21456493ae713226ce7373b98841d2df5c5df2cc69f74d03473a0333e72",
+    "docs/CHECKPOINT.md": "a4f346e97dea1dcbfa2adbd6a55562a514663379a3e859350380fe3b8eb8f0e0",
+    "docs/FILES_AND_CAPTURE.md": "a8aacab6445784f55cff76ad5f42c40758f2d7353c5173a1a4447b9c9e076f3a",
     "docs/FRAMES.md": "585f80496c03b3bb538dba34f9cb00a6fcf2d355f800d31a295f16d9d41487cb",
     "docs/PAGE_SERVICES.md": "764ac2d0295ac3d43adf81ccd7f2bb5661fe95ed0c253a0a78728cb464a89069",
     "include/chromerelay/browser.hpp": "11978810052cd5f3978b7e35fe4c990e100ea17bef38d24b9d11cca72affbe20",
@@ -133,13 +133,14 @@
     "src/browser/input_observer.cpp": "f2fc6893d1c6e1445efab89e2e4df39e925f16f6c78fa73e8de81725394c23b3",
     "src/browser/page_services.cpp": "4039accae455c62c1ac0b6ac97e7faeace2dec396384879514d71d0d6e3b9c60",
     "tests/integration/cookie_context_live.cpp": "02094497ad3a5270ea7f7c50839fa000ac9777980021ad27da9d49d40a6f9a51",
-    "tests/integration/files_live.cpp": "3b1dd6f1a22ba363dbafbbdf81b4de22944c55429a8e3c0fe1215074f7deb73e",
+    "tests/integration/files_live.cpp": "db779f1fb2022dd2781a62e9b49365d2a03f53404dd7965c15ac6113681819b8",
     "tests/integration/run_suite.py": "428d0ac45acdc43b46c04bdc83e24047bfefa130a3264843d633ebd18580f731",
     "tests/integration/target_affinity_live.cpp": "851dd9a5f4e76df650b7bb37b9afd9390a90fb8ebefe160269142991ee3547f7",
     "tests/integration/services_live.cpp": "f331224b200db4f603385601acd3116aa7bd734fdfbb4d1ea5157f766c592f96",
     "tests/integration/click_live.cpp": "0bfdf7dc128d466b757794ab1507d93f0d3cdecae6d480e3815450b5bbcfa2ee",
     "tests/integration/workflow_live.cpp": "3699555a410b3411c90b80246d01728546c877bf75cbeaf5d76f963bf850ea61",
-    "docs/CLICKS.md": "eb9fff87612bc8d2f6bd5c414db6a7d6e777a4863f587b8fd92d2ad2d25226dc"
+    "docs/CLICKS.md": "eb9fff87612bc8d2f6bd5c414db6a7d6e777a4863f587b8fd92d2ad2d25226dc",
+    "tests/fixtures/capture.html": "84d4a8df3c7bd99cd677df04fad0cd2b43f3e2ac895ba28d5c20f869ffdb8ee3"
   },
   "limits": [
     "macOS arm64 and owned Chrome only",
@@ -278,6 +279,72 @@
         "owned_cleanup": true,
         "transcript": "review-2026-09-25/deadline-sanitize153.txt",
         "sha256": "8c7f6bcf305ec4541e108ca5eea959e92d0cbcd7febc030363bae141d2888a4d"
+      }
+    ]
+  },
+  "capture_fixture_followup": {
+    "scope": "Owned capture fixture styling and test diagnostics only. Production code and all exact dimensions/pixel assertions are unchanged; full local production matrices remain the earlier 1533-check runs.",
+    "failed_hosted_run": "https://github.com/dhtfish988/ChromeRelay/actions/runs/36090429764",
+    "cloud_observation": "Viewport and full-page PNGs and their metadata agreed on width 785 rather than expected 800; element, scrolled and DPR2 captures had expected dimensions. Original cloud layout metrics were not recorded.",
+    "controlled_probe": "Across Chrome 152 and 153, explicit 15-pixel scrollbars yield a valid 785-pixel CSS content viewport in an 800-pixel window; PNG dimensions follow these metrics at DPR1 and DPR2. scrollbar-width:none preserves scrolling and the intended 800-pixel fixture geometry.",
+    "protocol_source": "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/browser_protocol.json",
+    "new_checks": 0,
+    "checks": [
+      {
+        "profile": "release152",
+        "chrome": "152.0.7977.82",
+        "programs": {
+          "relay-files-tests": 59,
+          "verify_pngs.py": 24,
+          "mcp_files.py": 23
+        },
+        "total": 106,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/capture-release152.txt",
+        "sha256": "ba8d923cdbf388bb363d1250e70634fcae5db427a9deac357f4dd8c6a9c69174"
+      },
+      {
+        "profile": "release153",
+        "chrome": "153.0.8010.54",
+        "programs": {
+          "relay-files-tests": 59,
+          "verify_pngs.py": 24,
+          "mcp_files.py": 23
+        },
+        "total": 106,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/capture-release153.txt",
+        "sha256": "794c061a4674da4a6730f4bf2c04d7ede3251602ac3473787d258f9527f742e7"
+      },
+      {
+        "profile": "debug153",
+        "chrome": "153.0.8010.54",
+        "programs": {
+          "relay-files-tests": 59,
+          "verify_pngs.py": 24,
+          "mcp_files.py": 23
+        },
+        "total": 106,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/capture-debug153.txt",
+        "sha256": "753cb65654ca4f95dccca6af19efe382a36e8248acaa75dce5dcabb46ccd7efe"
+      },
+      {
+        "profile": "sanitize153",
+        "chrome": "153.0.8010.54",
+        "programs": {
+          "relay-files-tests": 59,
+          "verify_pngs.py": 24,
+          "mcp_files.py": 23
+        },
+        "total": 106,
+        "failed": 0,
+        "owned_cleanup": true,
+        "transcript": "review-2026-09-25/capture-sanitize153.txt",
+        "sha256": "7a22281c9a6a9e4632409a3db99ed03122e4192e977dd9aa8fffc9178de49931"
       }
     ]
   }
