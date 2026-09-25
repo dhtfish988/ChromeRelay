@@ -63,7 +63,13 @@ server exits by disconnecting; it does not close your browser. Repeated
   file limits, composition, deadlines and side effects.
 - [CHECKPOINT.md](docs/CHECKPOINT.md): measured acceptance and exact boundaries.
 
-The 2026-09-25 follow-up passed **1,533 checks** in each of Debug, Release and
+The later [MCP and CLI review](validation/protocol-review-2026-09-25.json) passed
+**1,556 checks in Release**, plus 28 installed CLI checks. It fixes port-value
+precedence and validates MCP request shapes without conflating protocol errors
+with tool execution errors. Debug and ASan/UBSan each passed the 289 affected
+checks; their full matrices were not repeated for these changes.
+
+The earlier 2026-09-25 follow-up passed **1,533 checks** in each of Debug, Release and
 ASan/UBSan: 155 contracts, 1,146 actual Chrome/MCP checks and 232 socket/keyboard
 fault checks. Forty-six new checks cover interrupted typing and remote element
 ownership, default/private cookie-context isolation, and asynchronous file

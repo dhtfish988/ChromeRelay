@@ -1,0 +1,8 @@
+mcp_live.py
+{"checks": 55, "passed": true, "transport": "actual native stdio child"}
+
+mcp_cancellation.py
+{"checks": 25, "passed": true, "transport": "interactive native MCP processes with independent browser observer"}
+
+mcp_compatibility.py
+{"checks": 116, "legacy_names": 75, "baseline_value_vectors": 29, "passed": true}

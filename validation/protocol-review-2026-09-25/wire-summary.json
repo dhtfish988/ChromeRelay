@@ -1,0 +1,342 @@
+{
+  "checks": 169,
+  "passed": true,
+  "modes": [
+    {
+      "mode": "discovery-status",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-invalid-json",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-duplicate",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-missing-url",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-wrong-type",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-remote-host",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-wrong-port",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-control-path",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-nul-path",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-fragment",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-wrong-scheme",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-oversize",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-truncated",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "discovery-stall",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "handshake-status",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "handshake-bad-accept",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "handshake-stall",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "shared-deadline",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "fragmented",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "multiplex",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "protocol-error",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "late-reply",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "progress-error",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "cancel-call",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "request-limit",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "peer-close",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "peer-eof",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "close-pending",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "event-count-limit",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "event-byte-limit",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "websocket-size-limit",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "binary-json",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "invalid-json",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "duplicate-json",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-fractional-id",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-string-id",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-bool-id",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-negative-id",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-zero-id",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-large-id",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-both-result-error",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-missing-result",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-array-result",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-fractional-error",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-large-error",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-string-error",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-message-error",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-event-method",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-event-params",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-event-result",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-response-method",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-session-type",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-session-mismatch",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-empty-envelope",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-array-envelope",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "bad-null-envelope",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    }
+  ]
+}

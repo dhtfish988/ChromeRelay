@@ -50,7 +50,7 @@ python3 tests/integration/with_chrome.py \
 
 This command starts its own temporary headless Chrome and local fixture server;
 it does not use the manually started browser or require the terminal server
-above. It reports 52 checks covering the basic path, both protocol versions,
+above. It reports 55 checks covering the basic path, both protocol versions,
 compatibility names and frame operations. The evidence directory contains MCP
 request results and the owned-browser cleanup receipt. To include the existing
 53-check workflow suite, append `tests/integration/mcp_workflows.py` to the command.

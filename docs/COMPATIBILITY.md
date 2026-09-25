@@ -19,6 +19,17 @@ attribution. See `THIRD_PARTY_NOTICES.md` and [KEYBOARD.md](KEYBOARD.md).
 
 ## Result and behavior contracts
 
+MCP initialization requires string `clientInfo.name` and `clientInfo.version`.
+Notifications receive no response, and malformed notification parameters cannot
+complete initialization. For `tools/call`, omitted `arguments` mean `{}`; an
+explicit `null`, array or scalar is a malformed request and receives JSON-RPC
+error `-32602`. Unknown tool names use that protocol error too. Invalid values
+inside an existing tool's argument object and browser execution failures remain
+tool results with `isError: true`. These rules apply to both supported protocol
+versions and do not change the canonical/legacy name mapping. See the official
+[MCP request schema](https://modelcontextprotocol.io/specification/2025-11-25/schema)
+and [tool error categories](https://modelcontextprotocol.io/specification/2025-11-25/server/tools#error-handling).
+
 | Legacy call | Preserved behavior | Canonical API |
 |---|---|---|
 | `eval` | `result` contains a JSON **string**, including quoted string values. The expression runs once in the selected document. Function expressions are returned as undefined, not invoked. | `page_evaluate` returns the raw JSON value; special non-JSON numbers have an `unserializable` field. |

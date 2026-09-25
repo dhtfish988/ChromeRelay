@@ -5,6 +5,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
+#include <optional>
 #include <poll.h>
 #include <unistd.h>
 int main(int argc, char **argv) {
@@ -13,6 +14,7 @@ int main(int argc, char **argv) {
   try {
     ActionCatalog catalog;
     unsigned port = 9222;
+    std::optional<std::string> requested_port;
     bool compatibility = false;
     std::vector<std::filesystem::path> file_roots;
     auto parse_port = [&](const std::string &value) {
@@ -25,10 +27,6 @@ int main(int argc, char **argv) {
         throw RelayError("invalid DevTools port");
       port = result;
     };
-    if (const auto *environment = std::getenv("CDP_PORT"))
-      parse_port(environment);
-    if (const auto *environment = std::getenv("CHROMERELAY_PORT"))
-      parse_port(environment);
     for (int i = 1; i < argc; ++i) {
       const std::string option = argv[i];
       if (option == "--version") {
@@ -42,7 +40,7 @@ int main(int argc, char **argv) {
       if (option == "--compat-tools")
         compatibility = true;
       else if (option == "--port" && i + 1 < argc)
-        parse_port(argv[++i]);
+        requested_port = argv[++i];
       else if (option == "--allow-root" && i + 1 < argc)
         file_roots.emplace_back(argv[++i]);
       else if (option == "--help") {
@@ -55,6 +53,16 @@ int main(int argc, char **argv) {
       } else
         throw RelayError("unknown or incomplete option: " + option);
     }
+    // Validate the selected value only: an overridden environment variable
+    // must not prevent an explicit CLI value or the preferred variable.
+    if (!requested_port) {
+      if (const auto *environment = std::getenv("CHROMERELAY_PORT"))
+        requested_port = environment;
+      else if (const auto *environment = std::getenv("CDP_PORT"))
+        requested_port = environment;
+    }
+    if (requested_port)
+      parse_port(*requested_port);
     ActionRuntime runtime(port, file_roots.empty() ? PathAccess::defaults()
                                                    : file_roots);
     RequestQueue requests(

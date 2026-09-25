@@ -17,6 +17,7 @@ class ActionCatalog {
 public:
   ActionCatalog();
   Json list(bool compatibility = false) const;
+  bool contains(const std::string &name, bool compatibility = false) const;
   ActionInvocation resolve(const std::string &name, const Json &arguments,
                            bool compatibility = false) const;
   const std::vector<ActionDefinition> &definitions() const {

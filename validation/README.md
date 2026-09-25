@@ -1,5 +1,15 @@
 # Validation record
 
+The later MCP/CLI review on 2026-09-25 passed **1,556 checks in Release**:
+175 contracts, 1,149 owned-browser/MCP checks in 23 programs and 232 socket
+fault checks. The installed CLI passed 28 additional checks. Debug and
+ASan/UBSan each passed 65 affected contracts, 28 CLI checks and 196 MCP checks
+(289 including CLI); these were focused runs, not full matrix reruns.
+The independently rebuilt installed-library consumer checked the catalog only.
+The [protocol review summary](protocol-review-2026-09-25.json) records exact scope,
+source hashes and [selected transcripts](protocol-review-2026-09-25/).
+The historical full matrices and hosted runs below predate these changes.
+
 Hosted Release verification also passed at commit
 `9f585b4c357fd2aa97cd450a4478c3cefdbdb866` in
 [run 36091983364](https://github.com/dhtfish988/ChromeRelay/actions/runs/36091983364):
@@ -11,7 +21,7 @@ artifact hashes and scope. The previously observed transformed-frame hover
 timeout remains **OPEN**: this run passed it, but no cause or production fix
 was established. Historical local results below remain separately scoped.
 
-The 2026-09-25 review passed **1,533 checks** in each fresh Debug, Release and
+The earlier 2026-09-25 review passed **1,533 checks** in each fresh Debug, Release and
 ASan/UBSan build on macOS arm64: 155 contracts, 1,146 browser/MCP checks and
 232 socket faults. Forty-six new checks cover action target/session affinity, cookie-context
 isolation and asynchronous file selection. Installed CLI (17 checks) and independent consumer (seven) passed.
@@ -46,7 +56,7 @@ Installed CLI: 17 checks; independent consumer: seven. Extracted binary validati
 repeated 17 CLI, 116 MCP compatibility and seven consumer checks. Owned temporary
 Chrome 153 profiles were cleaned up. See `docs/CHECKPOINT.md`.
 
-## Current review evidence
+## Earlier review evidence
 
 - [Machine-readable review result](current-review.json) and [sanitized test transcripts](review-2026-09-25/).
 - [CMake 3.24 preset compatibility result](current-review-build.json).

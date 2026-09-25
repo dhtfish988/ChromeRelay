@@ -76,7 +76,10 @@ Default tool names include `page_navigate`, `element_click`, `element_type` and
 `page_capture`. Add `--compat-tools` to advertise all 75 old names. Inspect the
 schemas without connecting to Chrome using `--catalog` or `--compat-catalog`.
 `CHROMERELAY_PORT` takes priority over legacy `CDP_PORT`; `--port` takes priority
-over environment values. Supported MCP lifecycle versions are 2024-11-05 and
+over environment values. Only the selected value is validated; an invalid value
+in an overridden variable cannot block it. An empty selected value is invalid.
+`--help`, `--version` and either catalog flag work independently of port variables.
+Supported MCP lifecycle versions are 2024-11-05 and
 2025-11-25. See [COMPATIBILITY.md](COMPATIBILITY.md) before migrating callers.
 
 [The local workflow example](LOCAL_WORKFLOW.md) shows an actual page, tool
@@ -117,6 +120,6 @@ local fixtures. It runs browser/MCP checks and bounded socket fault scenarios,
 records each exit and cleans up its own browser. The default Chrome path is the
 macOS application shown above. Both `run_suite.py` and `with_chrome.py` accept
 `--chrome /absolute/path/to/Chrome` for another installed Chrome build. The full
-1,533-check count combines 155 checks from `ctest` with 1,146 browser/MCP and 232
+1,556-check count combines 175 checks from `ctest` with 1,149 browser/MCP and 232
 fault checks from `run_suite.py`; the consumer and CLI checks are additional.
 A successful build or catalog-only consumer alone does not validate browser behavior.

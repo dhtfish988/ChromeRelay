@@ -1,0 +1,223 @@
+{
+  "passed": true,
+  "base_commit": "a67c5c67c92e2032d8692c362c59906b906b8b0e",
+  "release": {
+    "checks": 1556,
+    "contracts": 175,
+    "browser": 1149,
+    "faults": {
+      "wire": {
+        "checks": 169,
+        "modes": 56,
+        "all_exit_zero": true,
+        "all_server_threads_stopped": true
+      },
+      "fault": {
+        "checks": 63,
+        "modes": 6,
+        "all_exit_zero": true,
+        "all_server_threads_stopped": true
+      }
+    },
+    "browser_programs": 23,
+    "program_details": [
+      {
+        "program": "relay-wire-tests",
+        "checks": 7
+      },
+      {
+        "program": "relay-browser-tests",
+        "checks": 25
+      },
+      {
+        "program": "relay-dom-tests",
+        "checks": 91
+      },
+      {
+        "program": "relay-keyboard-tests",
+        "checks": 169
+      },
+      {
+        "program": "relay-input-target-tests",
+        "checks": 97
+      },
+      {
+        "program": "relay-condition-tests",
+        "checks": 19
+      },
+      {
+        "program": "relay-click-tests",
+        "checks": 118
+      },
+      {
+        "program": "relay-frame-tests",
+        "checks": 58
+      },
+      {
+        "program": "relay-services-tests",
+        "checks": 55
+      },
+      {
+        "program": "relay-cookie-context-tests",
+        "checks": 18
+      },
+      {
+        "program": "relay-pointer-tests",
+        "checks": 30
+      },
+      {
+        "program": "relay-files-tests",
+        "checks": 59
+      },
+      {
+        "program": "relay-workflow-tests",
+        "checks": 41
+      },
+      {
+        "program": "relay-navigation-tests",
+        "checks": 29
+      },
+      {
+        "program": "relay-recovery-tests",
+        "checks": 13
+      },
+      {
+        "program": "relay-target-affinity-tests",
+        "checks": 10
+      },
+      {
+        "program": "verify_pngs.py",
+        "checks": 24
+      },
+      {
+        "program": "mcp_live.py",
+        "checks": 55
+      },
+      {
+        "program": "mcp_files.py",
+        "checks": 23
+      },
+      {
+        "program": "mcp_workflows.py",
+        "checks": 53
+      },
+      {
+        "program": "mcp_navigation.py",
+        "checks": 14
+      },
+      {
+        "program": "mcp_cancellation.py",
+        "checks": 25
+      },
+      {
+        "program": "mcp_compatibility.py",
+        "checks": 116
+      }
+    ],
+    "all_stderr_empty": true,
+    "owned_cleanup": true,
+    "installed_cli_additional": 28,
+    "independent_consumer": "catalog-only, 54 canonical / 75 compatibility; no live seven rerun"
+  },
+  "focused": {
+    "debug": {
+      "contracts": 65,
+      "cli": 28,
+      "browser_mcp": 196,
+      "total_with_cli": 289,
+      "full_suite_rerun": false,
+      "all_passed": true,
+      "owned_cleanup": true
+    },
+    "sanitize": {
+      "contracts": 65,
+      "cli": 28,
+      "browser_mcp": 196,
+      "total_with_cli": 289,
+      "full_suite_rerun": false,
+      "all_passed": true,
+      "owned_cleanup": true
+    }
+  },
+  "environment": {
+    "macos": "ProductName:\t\tmacOS\nProductVersion:\t\t26.7\nBuildVersion:\t\t25G229",
+    "clang": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "xcode": "Xcode 27.0\nBuild version 27A266a",
+    "release_chrome": "Google Chrome for Testing 152.0.7977.82",
+    "focused_chrome": "Google Chrome 153.0.8010.54"
+  },
+  "scope": "One full local Release run; Debug and ASan/UBSan affected groups only. Historical 1533 full matrices and hosted runs predate the MCP/CLI fixes. No browser production behavior change, no new TSan or fuzz run. Prior OOP hover cause remains OPEN.",
+  "date": "2026-09-25",
+  "source_state": "Working tree changes based on the named base commit, identified by source hashes below; no hosted result is claimed for these changes.",
+  "findings": [
+    {
+      "id": "port-precedence",
+      "before": "An invalid CDP_PORT blocked valid CHROMERELAY_PORT, and invalid environment values blocked explicit --port. Informational commands also failed before doing their work.",
+      "after": "Resolve CLI > CHROMERELAY_PORT > CDP_PORT > 9222, then validate only that selected value; help/version/catalog commands do not need a port.",
+      "regressions": "CLI 17 to 28 checks, including actual configured port readback without a browser."
+    },
+    {
+      "id": "mcp-request-boundaries",
+      "before": "Malformed clientInfo or initialized notification parameters could advance lifecycle state; null arguments reached a tool as an empty object; unknown tools and malformed arguments were reported as execution errors.",
+      "after": "Require clientInfo name/version strings, silently ignore malformed initialized notifications, reject non-object explicit tool arguments and unknown names with -32602, and retain execution errors for known-tool argument values.",
+      "regressions": "MCP contract 23 to 43 checks; real stdio MCP 52 to 55 checks; compatibility names and both protocol versions retained."
+    }
+  ],
+  "references": [
+    {
+      "url": "https://modelcontextprotocol.io/specification/2025-11-25/server/tools#error-handling",
+      "interpretation": "Unknown tool names and malformed tools/call request shapes receive JSON-RPC errors. Errors in values supplied to an existing tool retain isError:true tool results."
+    },
+    {
+      "url": "https://modelcontextprotocol.io/specification/2025-11-25/schema",
+      "interpretation": "Client name/version are required strings. Tool arguments and notification params, when supplied, are objects. Omitting arguments remains allowed; explicit null is not an object."
+    }
+  ],
+  "audit_boundaries": {
+    "target_session": "Reviewed original-page bindings, remote-object session calls and evaluation retry boundaries. No new reproduced target/session defect in this review; existing target-affinity and cookie-context programs passed in the full Release run.",
+    "file_paths": "Reviewed root pinning, canonical paths, upload revalidation and atomic screenshot output against FILES_AND_CAPTURE.md. Existing 40 file contracts, 59 live file checks, 24 PNG checks and 23 MCP file checks passed. The documented final Chrome file-open race and arbitrary page-script access remain explicit limits.",
+    "installation": "Fresh Release install, 28 installed CLI checks, and independent CMake consumer catalog build/run. No desktop MCP-host UI or personal-profile validation is claimed."
+  },
+  "source_sha256": {
+    "app/main.cpp": "ebe440bf34edd2efc93897183719ab5a716f579873bec68a5b2175b1f26953cc",
+    "include/chromerelay/catalog.hpp": "44e444c26b987523ec54f06503c31d766ab6419d32583a15b288dbef1433a45c",
+    "src/actions/action_catalog.cpp": "4cf9d1699f10833c076b027c4b2c4b6c8b06513b1c422d4005e1c9300adfa068",
+    "src/mcp/stdio_endpoint.cpp": "dee5fc53e2fd64122e361ef9512c21701fc23d7d0908ed2796c74ae6f64a9212",
+    "tests/unit/mcp_contract.cpp": "2d956f8f1a9f481be4123eb0ca006fd7278e32a63438221b19b7975a5a335bd6",
+    "tests/integration/verify_cli.py": "ac5ad5049ff846e20e66aec4f09b92ca011d1bc348184322c02abce8f055adaf",
+    "tests/integration/mcp_live.py": "8ec27cccc280282e0967a0c727c090878834ae1c7fb65b0a28e152e5230da646"
+  },
+  "transcripts_sha256": {
+    "protocol-review-2026-09-25/cli-debug.txt": "2fe38f2366faaa140411a4a8c9165e66e58f05e49338de1dc5a3c7d406ffe04d",
+    "protocol-review-2026-09-25/cli-release.txt": "2fe38f2366faaa140411a4a8c9165e66e58f05e49338de1dc5a3c7d406ffe04d",
+    "protocol-review-2026-09-25/cli-sanitize.txt": "2fe38f2366faaa140411a4a8c9165e66e58f05e49338de1dc5a3c7d406ffe04d",
+    "protocol-review-2026-09-25/consumer-catalog.txt": "b5b1f236bc0864f8a5662b6f44002c37d8d55e50255ec0b8cbba000a07c3bf86",
+    "protocol-review-2026-09-25/contracts-debug.txt": "986b503bce9c7c4a07d75f797bc29dd36435d5b215ee4ee7f9c6b89e77ebed0b",
+    "protocol-review-2026-09-25/contracts-release.txt": "74c86e1a2c1371bf1a2d3a833adfb4ef4b47d754b01b1d6cf2dbbcde8c836839",
+    "protocol-review-2026-09-25/contracts-sanitize.txt": "3df2497d78192bc61f5ee66b077cb3507dcbd2ea38d0fba1887f45ceb97b095f",
+    "protocol-review-2026-09-25/debug-browser.txt": "0f519bd5e2d5b5e6641c964361d7a1b561553efbf6a34a9742d5d758ce62b288",
+    "protocol-review-2026-09-25/debug-cleanup.json": "0dc9d3874d57bc405e5e5cd68d7aad33bc2fdd8ceacac00dbc32cbaccd52b899",
+    "protocol-review-2026-09-25/fault-summary.json": "42d35d83a2ee92c686d737e1a1ff1baa925f7abdccd8137b9c05e04df9d62c4d",
+    "protocol-review-2026-09-25/release-browser.txt": "912a1d379832d0d1c8303eece2b1bbc43d543a71afb3b3374fa436766d2e63f8",
+    "protocol-review-2026-09-25/release-cleanup.json": "2b39a994b8bf39b644c4f2f8c1af7e7d14fe89f059fee2fbca5dccd3aeae0734",
+    "protocol-review-2026-09-25/sanitize-browser.txt": "0f519bd5e2d5b5e6641c964361d7a1b561553efbf6a34a9742d5d758ce62b288",
+    "protocol-review-2026-09-25/sanitize-cleanup.json": "0dc9d3874d57bc405e5e5cd68d7aad33bc2fdd8ceacac00dbc32cbaccd52b899",
+    "protocol-review-2026-09-25/wire-summary.json": "8c7fc4be9ba544f32f347479d712c33f7141b12b0a82cc96b11f577b8a6b1ecd"
+  },
+  "raw_evidence_files": [
+    "protocol-cli-before.json",
+    "protocol-cli-after.json",
+    "primary-protocol-references.json",
+    "release-browser-final/owned-browser-run.json",
+    "release-wire-final/receipt.json",
+    "release-fault-final/receipt.json",
+    "cli-installed.json",
+    "verification.json"
+  ],
+  "publication_note": "Selected text transcripts are copied with local source and evidence prefixes replaced by placeholders. Complete raw records remain local; historical sources and evidence were not changed.",
+  "tested_binary_sha256": {
+    "release": "5010bed158ef1568cbf509d77631648e0d5bdf0ff439cbaf9554c95379c53742",
+    "debug": "9dc08f081b97c42edb8d0efbf71226bd6cb9fccc486ba378fd0a34ff02100219",
+    "sanitize": "cca961f403288cfd4193d7b0c1ded75afb536ca692212e45281b5a1da1174c56"
+  }
+}

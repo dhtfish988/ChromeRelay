@@ -30,6 +30,9 @@ Json ActionCatalog::list(bool compatibility) const {
   }
   return output;
 }
+bool ActionCatalog::contains(const std::string &name, bool compatibility) const {
+  return canonical_.contains(name) || (compatibility && legacy_.contains(name));
+}
 ActionInvocation ActionCatalog::resolve(const std::string &name,
                                         const Json &arguments,
                                         bool compatibility) const {

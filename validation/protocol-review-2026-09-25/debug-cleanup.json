@@ -1,0 +1,22 @@
+{
+  "programs": [
+    {
+      "program": "mcp_live.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "mcp_cancellation.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "mcp_compatibility.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    }
+  ],
+  "owned_browser_exit": 0,
+  "temporary_profile_removed_after_exit": true,
+  "http_server_thread_stopped": true
+}

@@ -1,0 +1,42 @@
+{
+  "checks": 63,
+  "passed": true,
+  "modes": [
+    {
+      "mode": "timeout",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "cancel",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "keydown-error",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "keyup-error",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "session-gone",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    },
+    {
+      "mode": "cleanup-timeout",
+      "exit_code": 0,
+      "server_thread_stopped": true,
+      "peer_errors": []
+    }
+  ]
+}

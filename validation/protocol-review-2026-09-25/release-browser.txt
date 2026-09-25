@@ -1,0 +1,79 @@
+relay-wire-tests
+{
+  "browser": {
+    "jsVersion": "15.2.124.21",
+    "product": "Chrome/152.0.7977.82",
+    "protocolVersion": "1.3",
+    "revision": "@d04cdb24d67b081f6cf80200ffc5233f44b61109",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+  },
+  "checks": 7,
+  "events": 2,
+  "passed": true
+}
+
+relay-browser-tests
+25 live-browser checks passed; 0 failed
+
+relay-dom-tests
+91 live-DOM checks passed; 0 failed
+
+relay-keyboard-tests
+169 keyboard checks passed; 0 failed
+
+relay-input-target-tests
+97 input-target checks passed; 0 failed
+
+relay-condition-tests
+19 condition checks passed; 0 failed
+
+relay-click-tests
+118 click checks passed; 0 failed
+
+relay-frame-tests
+58 live-frame checks passed; 0 failed
+
+relay-services-tests
+55 page services checks passed; 0 failed
+
+relay-cookie-context-tests
+18 cookie-context checks passed; 0 failed
+
+relay-pointer-tests
+30 pointer checks passed; 0 failed
+
+relay-files-tests
+59 live file/capture checks passed; 0 failed
+
+relay-workflow-tests
+41 live workflow checks passed; 0 failed
+
+relay-navigation-tests
+29 navigation checks passed; 0 failed
+
+relay-recovery-tests
+13 recovery checks passed; 0 failed
+
+relay-target-affinity-tests
+10 target-affinity checks passed; 0 failed
+
+verify_pngs.py
+{"checks": 24, "passed": true, "decoder": "Pillow", "images": 8}
+
+mcp_live.py
+{"checks": 55, "passed": true, "transport": "actual native stdio child"}
+
+mcp_files.py
+{"checks": 23, "passed": true, "transport": "actual native MCP processes", "decoder": "Pillow"}
+
+mcp_workflows.py
+{"checks": 53, "passed": true, "transport": "actual native MCP processes"}
+
+mcp_navigation.py
+{"checks": 14, "passed": true, "transport": "actual native MCP process"}
+
+mcp_cancellation.py
+{"checks": 25, "passed": true, "transport": "interactive native MCP processes with independent browser observer"}
+
+mcp_compatibility.py
+{"checks": 116, "legacy_names": 75, "baseline_value_vectors": 29, "passed": true}

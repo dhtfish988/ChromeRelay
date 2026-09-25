@@ -1,6 +1,31 @@
 # Local validation — 1.0.0
 
-## Follow-up review — 2026-09-25
+## MCP and CLI review — 2026-09-25
+
+A second code review reproduced two input-boundary defects. Invalid lower-priority
+port environment variables blocked valid overrides; the CLI now validates only
+the selected value. The MCP endpoint accepted incomplete client information and
+explicit null arguments, and reported unknown tools as execution failures.
+It now rejects malformed request shapes and unknown tools with protocol errors,
+while retaining `isError` results for invalid values passed to existing tools.
+Malformed notifications stay silent and cannot complete initialization.
+Both supported protocol versions and all compatibility names remain tested.
+
+One fresh full Release run passed **1,556 checks**: 175 contracts, 1,149
+owned-browser/MCP checks in 23 programs, and 232 socket faults. The installed
+Release CLI passed 28 additional checks. Its independently rebuilt library
+consumer checked the 54/75-name catalog only; the historical live seven checks
+were not repeated in that consumer. Debug and ASan/UBSan each passed the affected
+65 contracts, 28 CLI checks and 196 live MCP checks, rather than full matrices.
+Release used Chrome for Testing 152.0.7977.82; the focused builds used Chrome
+153.0.8010.54. All owned profiles and fixture servers were cleaned up.
+
+The [new summary](../validation/protocol-review-2026-09-25.json) keeps these
+results separate from earlier matrices. No new TSan or fuzz run is claimed.
+The previous intermittent transformed-frame hover cause remains unresolved;
+this protocol change does not alter browser input or claim to fix that cause.
+
+## Earlier follow-up review — 2026-09-25
 
 Fresh Debug, Release and ASan/UBSan each passed **1,533 checks**: 155 unit
 contracts, 1,146 owned-browser/MCP checks in 23 programs, and 232 socket/keyboard

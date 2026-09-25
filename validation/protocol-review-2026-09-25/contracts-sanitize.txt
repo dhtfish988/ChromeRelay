@@ -1,0 +1,32 @@
+UpdateCTestConfiguration  from :<repo>/DartConfiguration.tcl
+Test project <repo>/build/sanitize
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 2
+    Start 2: mcp-contract
+
+2: Test command: <repo>/build/sanitize/relay-mcp-tests
+2: Working Directory: <repo>/build/sanitize
+2: Test timeout computed to be: 10000000
+2: 43 MCP checks passed; 0 failed
+1/2 Test #2: mcp-contract .....................   Passed    1.81 sec
+test 5
+    Start 5: cancellation-contract
+
+5: Test command: <repo>/build/sanitize/relay-cancellation-contract-tests
+5: Working Directory: <repo>/build/sanitize
+5: Test timeout computed to be: 20
+5: 22 cancellation contract checks passed; 0 failed
+2/2 Test #5: cancellation-contract ............   Passed    2.17 sec
+
+The following tests passed:
+	mcp-contract
+	cancellation-contract
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   3.98 sec

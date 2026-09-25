@@ -1,0 +1,122 @@
+{
+  "programs": [
+    {
+      "program": "relay-wire-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-browser-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-dom-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-keyboard-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-input-target-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-condition-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-click-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-frame-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-services-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-cookie-context-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-pointer-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-files-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-workflow-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-navigation-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-recovery-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "relay-target-affinity-tests",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "verify_pngs.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "mcp_live.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "mcp_files.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "mcp_workflows.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "mcp_navigation.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "mcp_cancellation.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    },
+    {
+      "program": "mcp_compatibility.py",
+      "exit_code": 0,
+      "browser_alive_after": true
+    }
+  ],
+  "owned_browser_exit": 0,
+  "temporary_profile_removed_after_exit": true,
+  "http_server_thread_stopped": true
+}

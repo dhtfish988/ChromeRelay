@@ -18,9 +18,12 @@ def main():
     def run(arguments, data='', overrides=None):
         environment = {**os.environ, 'CDP_PORT': '9222', 'CHROMERELAY_PORT': '9222',
                        **(overrides or {})}
+        environment = {key: value for key, value in environment.items() if value is not None}
         result = subprocess.run([binary, *arguments], input=data, text=True,
                                 capture_output=True, timeout=10, cwd='/', env=environment)
         records.append({'arguments': arguments, 'exit_code': result.returncode,
+                        'port_environment': {key: environment.get(key) for key in
+                                             ['CDP_PORT', 'CHROMERELAY_PORT']},
                         'stdout': result.stdout, 'stderr': result.stderr})
         return result
 
@@ -58,6 +61,31 @@ def main():
         check(replies[0]['result']['protocolVersion'] == version and
               replies[0]['result']['serverInfo']['version'] == '1.0.0' and
               len(replies[1]['result']['tools']) == 54)
+    messages = [
+        {'jsonrpc': '2.0', 'id': 1, 'method': 'initialize', 'params': {
+            'protocolVersion': '2025-11-25', 'capabilities': {},
+            'clientInfo': {'name': 'port-precedence-check', 'version': '1.0'}}},
+        {'jsonrpc': '2.0', 'method': 'notifications/initialized'},
+        {'jsonrpc': '2.0', 'id': 2, 'method': 'tools/call',
+         'params': {'name': 'browser_settings'}}]
+    for arguments, overrides, expected in [
+        ([], {'CDP_PORT': 'invalid', 'CHROMERELAY_PORT': '9231'}, 9231),
+        (['--port', '9232'], {'CDP_PORT': 'invalid', 'CHROMERELAY_PORT': 'invalid'}, 9232),
+        (['--port', '9233'], {'CDP_PORT': '9224', 'CHROMERELAY_PORT': ''}, 9233),
+        ([], {'CDP_PORT': '9234', 'CHROMERELAY_PORT': None}, 9234),
+        ([], {'CDP_PORT': None, 'CHROMERELAY_PORT': None}, 9222),
+    ]:
+        result = run(arguments, ''.join(json.dumps(message) + '\n' for message in messages), overrides)
+        replies = [json.loads(line) for line in result.stdout.splitlines()]
+        check(result.returncode == 0 and not result.stderr and len(replies) == 2 and
+              replies[-1]['result']['structuredContent']['cdpPort'] == expected)
+    for overrides in [{'CDP_PORT': 'invalid', 'CHROMERELAY_PORT': None},
+                      {'CDP_PORT': '9222', 'CHROMERELAY_PORT': ''}]:
+        result = run([], overrides=overrides)
+        check(result.returncode == 2 and not result.stdout and 'invalid DevTools port' in result.stderr)
+    for option in ['--help', '--version', '--catalog', '--compat-catalog']:
+        result = run([option], overrides={'CDP_PORT': 'invalid', 'CHROMERELAY_PORT': 'invalid'})
+        check(result.returncode == 0 and result.stdout and not result.stderr)
     evidence = Path(args.evidence)
     evidence.parent.mkdir(parents=True, exist_ok=True)
     evidence.write_text(json.dumps({'passed': True, 'checks': checks, 'binary': binary,

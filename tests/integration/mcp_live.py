@@ -40,6 +40,9 @@ messages = [
     request(4, 'tools/call', {'name': 'page_navigate', 'arguments': {'url': url}}),
     request('中文-id', 'tools/call', {'name': 'page_evaluate', 'arguments': {'script': "'中文😀'"}}),
     request(6, 'tools/call', {'name': 'browser_debug', 'arguments': {'enabled': 'false'}}),
+    request('unknown-tool', 'tools/call', {'name': 'unknown_tool'}),
+    request('null-arguments', 'tools/call', {'name': 'browser_settings', 'arguments': None}),
+    request('array-arguments', 'tools/call', {'name': 'browser_settings', 'arguments': []}),
     request(10, 'tools/call', {'name': 'browser_debug', 'arguments': {'enabled': True}}),
     request(11, 'tools/call', {'name': 'element_fill', 'arguments': {'selector': '#person', 'text': 'MCP中文😀'}}),
     request(12, 'tools/call', {'name': 'element_read', 'arguments': {'selector': '#person', 'type': 'value'}}),
@@ -57,7 +60,7 @@ completed = subprocess.run([binary, '--port', port], input=encoded.encode(), cap
 record_child('canonical', completed)
 require(completed.returncode == 0, completed.stderr.decode(errors='replace'))
 responses = [json.loads(line) for line in completed.stdout.splitlines()]
-require(len(responses) == 16, 'notification gets no response and EOF does not drop last request')
+require(len(responses) == 19, 'notification gets no response and EOF does not drop last request')
 by_id = {response['id']: response for response in responses}
 require(by_id[1]['result']['protocolVersion'] == '2025-11-25', 'protocol negotiation')
 require(len(by_id[2]['result']['tools']) == 54, 'canonical catalog via stdio')
@@ -65,6 +68,9 @@ require(by_id[3]['result']['structuredContent']['created'], 'real tab creation v
 require(by_id[4]['result']['structuredContent']['title'] == 'ChromeRelay fixture', 'real navigation through stdio')
 require(by_id['中文-id']['result']['structuredContent']['result'] == '中文😀', 'UTF-8 request IDs and results')
 require(by_id[6]['result']['isError'], 'schema error reaches MCP as tool error')
+for identity in ['unknown-tool', 'null-arguments', 'array-arguments']:
+    require(by_id[identity]['error']['code'] == -32602 and 'result' not in by_id[identity],
+            identity + ' receives a protocol error without disrupting later calls')
 require(by_id[10]['result']['structuredContent']['debug'], 'diagnostics enabled through MCP')
 require(by_id[11]['result']['structuredContent']['currentValue'] == 'MCP中文😀', 'native fill through MCP')
 require(by_id[12]['result']['structuredContent']['value'] == 'MCP中文😀', 'independent read verifies MCP fill')

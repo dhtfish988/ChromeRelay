@@ -25,7 +25,8 @@ std::optional<Json> StdioEndpoint::receive(const Json &message) {
   const auto method = message.at("method").get<std::string>();
   const auto parameters = message.value("params", Json::object());
   if (!request) {
-    if (method == "notifications/initialized" && initialized_)
+    if (method == "notifications/initialized" && initialized_ &&
+        parameters.is_object())
       ready_ = true;
     return {};
   }
@@ -43,10 +44,15 @@ std::optional<Json> StdioEndpoint::receive(const Json &message) {
           !parameters.contains("capabilities") ||
           !parameters.at("capabilities").is_object() ||
           !parameters.contains("clientInfo") ||
-          !parameters.at("clientInfo").is_object())
+          !parameters.at("clientInfo").is_object() ||
+          !parameters.at("clientInfo").contains("name") ||
+          !parameters.at("clientInfo").at("name").is_string() ||
+          !parameters.at("clientInfo").contains("version") ||
+          !parameters.at("clientInfo").at("version").is_string())
         return error(
             id, -32602,
-            "initialize requires protocolVersion, capabilities and clientInfo");
+            "initialize requires protocolVersion, capabilities and clientInfo "
+            "with string name and version");
       const auto requested =
           parameters.at("protocolVersion").get<std::string>();
       version_ = requested == "2024-11-05" ? requested : "2025-11-25";
@@ -68,10 +74,15 @@ std::optional<Json> StdioEndpoint::receive(const Json &message) {
     if (method == "tools/call") {
       if (!parameters.contains("name") || !parameters.at("name").is_string())
         return error(id, -32602, "tools/call requires a tool name");
+      if (parameters.contains("arguments") &&
+          !parameters.at("arguments").is_object())
+        return error(id, -32602, "tools/call arguments must be an object");
+      const auto name = parameters.at("name").get<std::string>();
+      if (!catalog_.contains(name, compatibility_))
+        return error(id, -32602, "Unknown tool: " + name);
       try {
         auto invocation = catalog_.resolve(
-            parameters.at("name"),
-            parameters.value("arguments", Json::object()), compatibility_);
+            name, parameters.value("arguments", Json::object()), compatibility_);
         auto value = handler_(invocation);
         Json result = {{"content", Json::array({{{"type", "text"},
                                                  {"text", value.dump()}}})},

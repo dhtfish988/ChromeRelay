@@ -34,11 +34,29 @@ int main() {
                 {{"protocolVersion", "2026-01-01"},
                  {"capabilities", Json::object()},
                  {"clientInfo", {{"name", "fixture"}, {"version", "1"}}}});
+    for (const auto &client :
+         std::vector<Json>{Json::object(), {{"name", "fixture"}},
+                           {{"name", 5}, {"version", "1"}},
+                           {{"name", "fixture"}, {"version", 1}}}) {
+      auto malformed = init;
+      malformed["params"]["clientInfo"] = client;
+      check(endpoint.receive(malformed)->at("error").at("code") == -32602,
+            "malformed client information cannot initialize the session");
+    }
     check(endpoint.receive(init)->at("result").at("protocolVersion") ==
               "2025-11-25",
           "unsupported version negotiates declared supported version");
     check(endpoint.receive(request("tools/list"))->contains("error"),
           "initialized notification is required");
+    for (const auto &parameters :
+         std::vector<Json>{nullptr, Json::array(), true, "invalid"}) {
+      const auto ignored = endpoint.receive(
+          {{"jsonrpc", "2.0"}, {"method", "notifications/initialized"},
+           {"params", parameters}});
+      check(!ignored && endpoint.receive(request("tools/list"))
+                               ->at("error").at("code") == -32002,
+            "malformed notification is silent and cannot complete initialization");
+    }
     check(!endpoint.receive(
               {{"jsonrpc", "2.0"}, {"method", "notifications/initialized"}}),
           "notification never receives a response");
@@ -61,8 +79,29 @@ int main() {
     check(reply->at("result").at("isError") == true && calls == 1,
           "invalid action arguments cannot reach browser");
     reply = endpoint.receive(request("tools/call", {{"name", "__proto__"}}));
+    check(reply->at("error").at("code") == -32602 && calls == 1,
+          "unknown tool is a protocol error and cannot reach handler");
+    for (const auto &arguments :
+         std::vector<Json>{nullptr, Json::array(), "invalid", 5, true}) {
+      reply = endpoint.receive(request(
+          "tools/call", {{"name", "browser_settings"}, {"arguments", arguments}}));
+      check(reply->at("error").at("code") == -32602 && calls == 1,
+            "non-object tool arguments cannot reach handler");
+    }
+    reply = endpoint.receive(request("tools/call", {{"name", "get_url"}}));
+    check(reply->at("error").at("code") == -32602 && calls == 1,
+          "legacy-only name is unknown outside compatibility mode");
+    reply = endpoint.receive(request(
+        "tools/call", {{"name", "page_navigate"}, {"arguments", {{"url", 5}}}}));
     check(reply->at("result").at("isError") == true && calls == 1,
-          "unknown action cannot reach handler");
+          "known tool input value errors remain tool execution errors");
+    check(!endpoint.receive({{"jsonrpc", "2.0"}, {"method", "tools/call"},
+                             {"params", {{"name", "browser_settings"}}}}) &&
+              calls == 1,
+          "tool-call notifications never execute a handler or receive a reply");
+    reply = endpoint.receive(request("tools/call", {{"name", "browser_settings"}}));
+    check(!reply->at("result").at("isError").get<bool>() && calls == 2,
+          "omitted arguments remain an empty object after malformed requests");
     check(endpoint.receive(request("missing"))->at("error").at("code") ==
               -32601,
           "unknown request error");
@@ -114,6 +153,16 @@ int main() {
     check(!reply->at("result").contains("structuredContent") &&
               !reply->at("result").at("isError").get<bool>(),
           "legacy response contains supported content form");
+    check(legacy.receive(request("tools/call", {{"name", "missing"}}))
+                  ->at("error").at("code") == -32602,
+          "older protocol also reports an unknown tool as a protocol error");
+    check(legacy.receive(request("tools/call", {{"name", "get_url"},
+                                                {"arguments", nullptr}}))
+                  ->at("error").at("code") == -32602,
+          "older protocol also rejects non-object tool arguments");
+    check(!legacy.receive(request("tools/call", {{"name", "page_read"}}))
+                   ->at("result").at("isError").get<bool>(),
+          "canonical names remain callable in compatibility mode");
     std::cout << passed << " MCP checks passed; " << failed << " failed\n";
     return failed ? 1 : 0;
   } catch (const std::exception &error) {
